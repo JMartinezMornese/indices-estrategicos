@@ -1,0 +1,4322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Índices Estratégicos - Mornese Analytics</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js">
+    </script>
+
+    <style>
+        /* ============================================================
+           ESTILOS COMPLETOS - VERSIÓN FINAL CON GRÁFICA PREMIUM
+           ============================================================ */
+        :root {
+            --color-primary: #1a2a6c;
+            --color-accent: #f7c948;
+            --color-blue: #1E5EFF;
+            --color-purple: #7B3FF2;
+            --color-green: #2DBE60;
+            --color-red: #FF3131;
+            --color-bg: #f0f2f7;
+            --color-sidebar: #0a1c47;
+            --color-sidebar-text: #b0c4de;
+            --color-card-bg: #ffffff;
+            --color-border: #e2e6ef;
+            --color-text: #1C2640;
+            --color-text-light: #6B7280;
+            --shadow-card: 0 1px 6px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.35);
+            --radius: 12px;
+            --font-family: 'Inter', 'Segoe UI Variable', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 13px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ============================================================
+           SIDEBAR
+           ============================================================ */
+        #sidebar {
+            width: 205px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0c2355 0%, #081c44 35%, #071631 100%);
+            color: #b0c4de;
+            padding: 0 0 0 0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+            z-index: 100;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 3px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+
+        .logo-wrapper {
+            padding: 14px 16px 16px 16px;
+            margin-bottom: 18px;
+        }
+
+        .logo {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .logo-icon {
+            display: flex;
+            align-items: flex-end;
+            gap: 2.5px;
+            width: 34px;
+            height: 28px;
+            background: none;
+            flex-shrink: 0;
+        }
+
+        .logo-icon span {
+            width: 6px;
+            border-radius: 2px;
+        }
+
+        .logo-icon span:nth-child(1) {
+            height: 10px;
+            background: #4da3ff;
+        }
+        .logo-icon span:nth-child(2) {
+            height: 16px;
+            background: #1d4ed8;
+        }
+        .logo-icon span:nth-child(3) {
+            height: 22px;
+            background: #163caa;
+        }
+        .logo-icon span:nth-child(4) {
+            height: 26px;
+            background: #0a1c47;
+        }
+
+        .logo-text {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: -0.2px;
+            line-height: 1.05;
+            color: #15294b;
+        }
+
+        .logo-text small {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #7d889b;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        .nav-section {
+            font-size: 11px;
+            font-weight: 700;
+            color: #B7C4E3;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 0 20px 8px 20px;
+            margin-top: 24px;
+        }
+
+        .nav-section:first-of-type {
+            margin-top: 0;
+        }
+
+        #sidebar nav ul {
+            list-style: none;
+            padding: 0 12px;
+        }
+
+        #sidebar nav ul li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.25s, color 0.25s, box-shadow 0.25s, transform 0.15s;
+            color: #b0c4de;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        #sidebar nav ul li:hover {
+            background: rgba(37, 99, 235, 0.25);
+            color: #ffffff;
+            transform: translateX(2px);
+        }
+
+        #sidebar nav ul li.active {
+            background: linear-gradient(90deg, #1f5eff, #266dff);
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.35), 0 6px 20px rgba(37, 99, 235, 0.28);
+            border-radius: 8px;
+            transform: none;
+        }
+
+        #sidebar nav ul li.active-country {
+            background: #1E4ED8;
+            color: #ffffff;
+            border-radius: 8px;
+            transform: none;
+        }
+
+        #sidebar nav ul li .icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+
+        #sidebar nav ul li .flag {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            margin-right: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar nav ul li .label {
+            flex: 1;
+        }
+
+        /* ============================================================
+           MAIN CONTENT
+           ============================================================ */
+        #main {
+            flex: 1;
+            padding: 16px 24px 24px 24px;
+            max-width: calc(100% - 205px);
+            overflow-x: hidden;
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .titulo-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .titulo-dashboard h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--color-primary);
+            letter-spacing: -0.3px;
+            line-height: 1.1;
+        }
+
+        .titulo-dashboard .subtitle {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--color-text-light);
+        }
+
+        #header .header-right {
+            font-size: 12px;
+            color: var(--color-text-light);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-top: 2px;
+        }
+
+        #header .header-right strong {
+            color: var(--color-text);
+        }
+
+        .btn-refresh {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--color-text-light);
+            transition: transform 0.3s;
+            padding: 2px 6px;
+        }
+
+        .btn-refresh:hover {
+            transform: rotate(60deg);
+            color: var(--color-primary);
+        }
+
+        .cargar-excel-btn {
+            background: var(--color-accent);
+            color: var(--color-primary);
+            border: none;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cargar-excel-btn:hover {
+            background: #e8b83a;
+        }
+
+        .cargar-excel-btn i {
+            font-size: 13px;
+        }
+
+        #file-input-excel {
+            display: none;
+        }
+
+        /* ============================================================
+           FILTROS
+           ============================================================ */
+        #filtros {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 12px 16px;
+            background: var(--color-card-bg);
+            padding: 10px 18px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-card);
+            margin-bottom: 20px;
+        }
+
+        #filtros .grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: none;
+        }
+
+        #filtros .grupo label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--color-text-light);
+        }
+
+        .grupo label i {
+            font-size: 10px;
+            margin-right: 4px;
+        }
+
+        /* ============================================================
+           DROPDOWN PERSONALIZADO PARA PAÍS
+           ============================================================ */
+        .custom-dropdown {
+            position: relative;
+            width: 190px;
+            user-select: none;
+        }
+
+        .custom-dropdown .dropdown-select {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            padding-left: 32px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 12px;
+            color: var(--color-text);
+            font-family: inherit;
+            position: relative;
+            min-height: 34px;
+        }
+
+        .custom-dropdown .dropdown-select:hover {
+            border-color: #b0b8c8;
+        }
+
+        .custom-dropdown .dropdown-select .selected-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .custom-dropdown .dropdown-select .selected-text .flag-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .custom-dropdown .dropdown-select .selected-text .globe-icon {
+            font-size: 14px;
+            color: var(--color-text-light);
+        }
+
+        .custom-dropdown .dropdown-select .arrow {
+            font-size: 12px;
+            color: var(--color-text-light);
+            transition: transform 0.25s ease;
+            margin-left: 4px;
+        }
+
+        .custom-dropdown .dropdown-select .arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .custom-dropdown .dropdown-select .globe-fixed {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--color-text-light);
+            pointer-events: none;
+        }
+
+        .custom-dropdown .dropdown-select:focus-within {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(247, 201, 72, 0.15);
+        }
+
+        .custom-dropdown .dropdown-options {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            padding: 4px 0;
+        }
+
+        .custom-dropdown .dropdown-options.open {
+            display: block;
+            animation: dropdownFade 0.2s ease;
+        }
+
+        @keyframes dropdownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .custom-dropdown .dropdown-options .option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            padding-left: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 12px;
+            color: var(--color-text);
+        }
+
+        .custom-dropdown .dropdown-options .option:hover {
+            background: #f0f4ff;
+        }
+
+        .custom-dropdown .dropdown-options .option.active {
+            background: #e8edf8;
+            font-weight: 600;
+        }
+
+        .custom-dropdown .dropdown-options .option .flag-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .custom-dropdown .dropdown-options .option .globe-icon {
+            font-size: 14px;
+            color: var(--color-text-light);
+        }
+
+        .custom-dropdown .dropdown-options .option .check {
+            margin-left: auto;
+            color: var(--color-blue);
+            font-size: 14px;
+            opacity: 0;
+        }
+
+        .custom-dropdown .dropdown-options .option.active .check {
+            opacity: 1;
+        }
+
+        .custom-dropdown .dropdown-options::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-dropdown .dropdown-options::-webkit-scrollbar-track {
+            background: #f1f3f8;
+            border-radius: 4px;
+        }
+        .custom-dropdown .dropdown-options::-webkit-scrollbar-thumb {
+            background: #c4c9d8;
+            border-radius: 4px;
+        }
+
+        /* ============================================================
+           SELECTORES NATIVOS
+           ============================================================ */
+        #filtro-periodo {
+            width: 160px;
+        }
+
+        #filtro-indicador {
+            width: 170px;
+        }
+
+        #filtros .grupo select {
+            padding: 6px 10px;
+            padding-left: 32px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 12px;
+            background: #fff;
+            font-family: inherit;
+            color: var(--color-text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%236b7280' d='M7 9.5L2 4.5h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+            cursor: pointer;
+            min-height: 34px;
+        }
+
+        #filtro-periodo {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E"),
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%236b7280' d='M7 9.5L2 4.5h10z'/%3E%3C/svg%3E");
+            background-position: left 10px center, right 10px center;
+            background-repeat: no-repeat, no-repeat;
+            padding-left: 32px;
+            padding-right: 30px;
+        }
+
+        #filtro-indicador {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='22 12 18 12 15 21 9 3 6 12 2 12'/%3E%3C/svg%3E"),
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%236b7280' d='M7 9.5L2 4.5h10z'/%3E%3C/svg%3E");
+            background-position: left 10px center, right 10px center;
+            background-repeat: no-repeat, no-repeat;
+            padding-left: 32px;
+            padding-right: 30px;
+        }
+
+        #filtros .grupo select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(247, 201, 72, 0.15);
+        }
+
+        /* ============================================================
+           BOTÓN LIMPIAR
+           ============================================================ */
+        #filtros .btn-limpiar {
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+            height: 36px;
+            align-self: flex-end;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #filtros .btn-limpiar i {
+            font-size: 12px;
+        }
+
+        #filtros .btn-limpiar:hover {
+            background: var(--color-secondary);
+        }
+
+        /* ============================================================
+           TARJETAS KPI
+           ============================================================ */
+        #cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .card-kpi {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 18px;
+            min-height: 110px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.2s, transform 0.2s;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            border: none;
+        }
+
+        .card-kpi:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        .icon-circle svg {
+            width: 26px;
+            height: 26px;
+            fill: none;
+            stroke: #ffffff;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .card-kpi.blue .icon-circle {
+            background: #1E5EFF;
+        }
+        .card-kpi.blue .fila .numero {
+            color: #1E5EFF;
+        }
+
+        .card-kpi.purple .icon-circle {
+            background: #7B3FF2;
+        }
+        .card-kpi.purple .fila .numero {
+            color: #7B3FF2;
+        }
+
+        .card-kpi.green .icon-circle {
+            background: #2DBE60;
+        }
+        .card-kpi.green .fila .numero {
+            color: #2DBE60;
+        }
+
+        .card-kpi.red .icon-circle {
+            background: #FF3131;
+        }
+        .card-kpi.red .fila .numero {
+            color: #FF3131;
+        }
+
+        .contenido {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+
+        .contenido .titulo {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #6B7280;
+        }
+
+        .contenido .cartera {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+            color: #1C2640;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .contenido .fila {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1px;
+        }
+
+        .contenido .fila .texto {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6B7280;
+        }
+
+        .contenido .fila .numero {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .contenido .variacion {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .contenido .variacion .up {
+            color: #2DBE60;
+            font-weight: 700;
+        }
+
+        .contenido .variacion .down {
+            color: #FF3131;
+            font-weight: 700;
+        }
+
+        .contenido .variacion .vs {
+            color: #6B7280;
+        }
+
+        /* ============================================================
+           PANELES
+           ============================================================ */
+        #main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .panel {
+            background: var(--color-card-bg);
+            border-radius: var(--radius);
+            padding: 18px 20px 16px 20px;
+            box-shadow: var(--shadow-card);
+            transition: box-shadow 0.2s;
+            position: relative;
+        }
+
+        .panel:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .panel .panel-header h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .panel .panel-header .badge {
+            font-size: 10px;
+            color: var(--color-text-light);
+            background: #f1f3f8;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .panel .panel-header .badge.periodo {
+            background: rgba(30, 94, 255, 0.10);
+            color: var(--color-blue);
+        }
+
+        /* Badge tipo píldora para evolución */
+        .badge-pill {
+            background: #EEF4FF;
+            color: #2D5BE3;
+            font-weight: 700;
+            font-size: 10px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-expand-panel {
+            background: none;
+            border: none;
+            color: var(--color-text-light);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .btn-expand-panel:hover {
+            background: rgba(30, 94, 255, 0.10);
+            color: var(--color-blue);
+        }
+
+        .panel-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-header-left .btn-expand-panel {
+            font-size: 12px;
+        }
+
+        /* Icono SVG en header de evolución */
+        .icon-svg-evolucion {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .icon-svg-evolucion svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: var(--color-primary);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* ============================================================
+           RANKING
+           ============================================================ */
+        .ranking-container {
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .ranking-container::-webkit-scrollbar {
+            width: 3px;
+        }
+        .ranking-container::-webkit-scrollbar-thumb {
+            background: var(--color-blue);
+            border-radius: 4px;
+        }
+        .ranking-container.purple-scroll::-webkit-scrollbar-thumb {
+            background: var(--color-purple);
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            margin-bottom: 3px;
+            border-bottom: 1px solid #f5f7fc;
+            width: 100%;
+        }
+
+        .ranking-item:hover {
+            background: rgba(30, 94, 255, 0.06);
+        }
+
+        .ranking-item.seleccionada {
+            background: rgba(247, 201, 72, 0.15);
+            border-left: 3px solid var(--color-accent);
+            padding-left: 10px;
+        }
+
+        .ranking-item .pos {
+            font-weight: 800;
+            font-size: 13px;
+            min-width: 30px;
+            text-align: center;
+            color: var(--color-blue);
+            flex-shrink: 0;
+        }
+
+        .ranking-item .name {
+            flex: 1;
+            font-weight: 600;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 60px;
+            color: var(--color-text);
+        }
+
+        .ranking-item .barra-wrapper {
+            flex: 2.5;
+            height: 20px;
+            background: #e5e9f0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            min-width: 60px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .ranking-item .barra-wrapper .barra {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: linear-gradient(90deg, #1E5EFF, #4B7CFF, #7A9FFF);
+            position: relative;
+            min-width: 4px;
+        }
+
+        .ranking-item .barra-wrapper .barra::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent);
+            border-radius: 10px 10px 0 0;
+        }
+
+        .ranking-item .valor {
+            font-weight: 700;
+            min-width: 40px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--color-primary);
+            flex-shrink: 0;
+        }
+
+        .ranking-item.top1 .name {
+            color: var(--color-accent);
+            font-weight: 800;
+        }
+
+        .ranking-item.top1 .pos {
+            font-size: 15px;
+            color: var(--color-accent);
+        }
+
+        .ranking-item.top1 .valor {
+            color: var(--color-accent);
+        }
+
+        .ranking-item.top1 .barra-wrapper .barra {
+            background: linear-gradient(90deg, #f7c948, #fbbf24, #fcd34d);
+        }
+
+        #panel-ranking-promedio .ranking-item .pos {
+            color: var(--color-purple);
+        }
+
+        #panel-ranking-promedio .ranking-item .barra-wrapper .barra {
+            background: linear-gradient(90deg, #7B3FF2, #A07BFF, #C4B5FD);
+        }
+
+        #panel-ranking-promedio .ranking-item:hover {
+            background: rgba(123, 63, 242, 0.06);
+        }
+
+        #panel-ranking-promedio .ranking-item.top1 .pos {
+            color: var(--color-accent);
+        }
+
+        #panel-ranking-promedio .ranking-item.top1 .barra-wrapper .barra {
+            background: linear-gradient(90deg, #f7c948, #fbbf24, #fcd34d);
+        }
+
+        #panel-ranking-promedio .ranking-container::-webkit-scrollbar-thumb {
+            background: var(--color-purple);
+        }
+
+        .eje-valores {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 8px 0 40px;
+            font-size: 9px;
+            color: var(--color-text-light);
+            border-top: 1px solid var(--color-border);
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+
+        .eje-valores span {
+            font-weight: 600;
+        }
+
+        .eje-valores .eje-min {
+            color: var(--color-text-light);
+        }
+
+        #panel-ranking .eje-valores .eje-max {
+            color: var(--color-blue);
+            font-weight: 700;
+        }
+
+        #panel-ranking-promedio .eje-valores .eje-max {
+            color: var(--color-purple);
+            font-weight: 700;
+        }
+
+        /* ============================================================
+           EVOLUCION - PREMIUM
+           ============================================================ */
+        #evolucion-panel {
+            grid-column: 1;
+        }
+
+        /* Contenedor con fondo sutil */
+        .evolucion-container {
+            position: relative;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #f9fbff 60%, #eef5ff 100%);
+            padding: 4px 0;
+        }
+
+        #evolucion-panel canvas {
+            max-height: 150px;
+            max-width: 100%;
+        }
+
+        /* Leyenda con líneas */
+        .evolucion-legend {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+            font-size: 11px;
+        }
+
+        .evolucion-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: var(--color-text);
+            cursor: default;
+            transition: opacity 0.2s;
+        }
+
+        .evolucion-legend .legend-item:hover {
+            opacity: 0.7;
+        }
+
+        .evolucion-legend .legend-item .line-sample {
+            width: 22px;
+            height: 3px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        .evolucion-legend .legend-item .line-sample.maxima {
+            background: #FF3131;
+        }
+        .evolucion-legend .legend-item .line-sample.promedio {
+            background: #2DBE60;
+        }
+        .evolucion-legend .legend-item .line-sample.propia {
+            background: #1E5EFF;
+        }
+
+        /* ============================================================
+           TABLA
+           ============================================================ */
+        #tabla-panel {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .tabla-header-oscuro {
+            background: linear-gradient(135deg, #1a2a6c, #2d3e8f);
+            color: #fff;
+            border-radius: var(--radius) var(--radius) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: -18px -20px 12px -20px;
+            padding: 10px 16px;
+        }
+
+        .tabla-header-oscuro h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .tabla-header-oscuro .acciones {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .tabla-header-oscuro .acciones select {
+            padding: 4px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 180px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23ffffff' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 28px;
+        }
+
+        .tabla-header-oscuro .acciones select option {
+            background: #1a2a6c;
+            color: #fff;
+        }
+
+        .tabla-header-oscuro .acciones select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        .tabla-header-oscuro .acciones input {
+            padding: 4px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 11px;
+            min-width: 120px;
+        }
+
+        .tabla-header-oscuro .acciones input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .tabla-header-oscuro .acciones input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .tabla-header-oscuro .acciones .btn-icon {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tabla-header-oscuro .acciones .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .tabla-header-oscuro .acciones .btn-excel {
+            background: rgba(45, 190, 96, 0.3);
+        }
+        .tabla-header-oscuro .acciones .btn-excel:hover {
+            background: rgba(45, 190, 96, 0.5);
+        }
+        .tabla-header-oscuro .acciones .btn-pdf {
+            background: rgba(255, 49, 49, 0.3);
+        }
+        .tabla-header-oscuro .acciones .btn-pdf:hover {
+            background: rgba(255, 49, 49, 0.5);
+        }
+
+        .table-scroll {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .table-scroll table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+        }
+
+        .table-scroll table thead th {
+            background: #f8faff;
+            padding: 5px 6px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--color-text-light);
+            border-bottom: 2px solid var(--color-border);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            background: #f8faff;
+            z-index: 2;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            transition: color 0.2s;
+        }
+
+        .table-scroll table thead th:hover {
+            color: var(--color-primary);
+        }
+
+        .table-scroll table thead th .sort-icon {
+            margin-left: 4px;
+            font-size: 10px;
+            opacity: 0.4;
+        }
+
+        .table-scroll table thead th.active .sort-icon {
+            opacity: 1;
+            color: var(--color-blue);
+        }
+
+        .table-scroll table tbody td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #f1f3f8;
+            vertical-align: middle;
+            font-size: 10.5px;
+        }
+
+        .table-scroll table tbody tr:hover {
+            background: #fafbff;
+            cursor: pointer;
+        }
+
+        .table-scroll table tbody tr.seleccionada {
+            background: rgba(247, 201, 72, 0.10);
+            border-left: 2px solid var(--color-accent);
+        }
+
+        .table-scroll table tbody td .num {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .table-scroll table tbody td .num.destacado {
+            color: var(--color-blue);
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding-top: 6px;
+            border-top: 1px solid var(--color-border);
+            margin-top: 4px;
+            font-size: 10px;
+            color: var(--color-text-light);
+        }
+
+        .table-footer .paginacion {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .table-footer .paginacion button {
+            background: #f1f3f8;
+            border: none;
+            padding: 2px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 0.2s;
+            font-size: 10px;
+        }
+
+        .table-footer .paginacion button:hover {
+            background: var(--color-accent);
+            color: #fff;
+        }
+
+        .table-footer .paginacion button.active {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .table-footer .paginacion button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* ============================================================
+           MODALES
+           ============================================================ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.60);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border-radius: 16px;
+            width: 95%;
+            max-width: 1380px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-modal);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .modal-header .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--color-text-light);
+            transition: color 0.2s, transform 0.2s;
+            padding: 4px 8px;
+        }
+
+        .modal-header .btn-close:hover {
+            color: var(--color-red);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 20px 24px 16px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-body .table-scroll {
+            max-height: 55vh;
+        }
+
+        .modal-body .table-scroll table {
+            font-size: 12px;
+        }
+
+        .modal-body .table-scroll table thead th {
+            font-size: 10px;
+            padding: 8px 12px;
+        }
+
+        .modal-body .table-scroll table tbody td {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .modal-body .ranking-container {
+            max-height: 55vh;
+        }
+
+        .modal-body .ranking-container .ranking-item {
+            padding: 10px 8px;
+            font-size: 14px;
+        }
+
+        .modal-body .ranking-container .ranking-item .pos {
+            font-size: 15px;
+            min-width: 36px;
+        }
+
+        .modal-body .ranking-container .ranking-item .name {
+            font-size: 14px;
+        }
+
+        .modal-body .ranking-container .ranking-item .barra-wrapper {
+            height: 26px;
+        }
+
+        .modal-body .ranking-container .ranking-item .valor {
+            font-size: 14px;
+            min-width: 50px;
+        }
+
+        .modal-body .ranking-container .eje-valores {
+            font-size: 11px;
+            padding-left: 48px;
+        }
+
+        /* Evolución en modal */
+        .modal-body .evolucion-container {
+            position: relative;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #f9fbff 60%, #eef5ff 100%);
+            padding: 8px 0;
+        }
+
+        .modal-body .evolucion-container canvas {
+            max-height: 300px;
+            max-width: 100%;
+        }
+
+        .modal-body .evolucion-legend {
+            margin-top: 14px;
+            gap: 20px;
+            font-size: 12px;
+        }
+
+        .modal-footer {
+            padding: 12px 24px;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            font-size: 12px;
+            color: var(--color-text-light);
+        }
+
+        .modal-footer .acciones-modal {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-footer .acciones-modal button {
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-footer .acciones-modal button:hover {
+            background: var(--color-secondary);
+        }
+
+        .modal-footer .acciones-modal .btn-excel-modal {
+            background: #2DBE60;
+        }
+        .modal-footer .acciones-modal .btn-excel-modal:hover {
+            background: #1ea852;
+        }
+
+        .modal-footer .acciones-modal .btn-pdf-modal {
+            background: #FF3131;
+        }
+        .modal-footer .acciones-modal .btn-pdf-modal:hover {
+            background: #d62828;
+        }
+
+        .modal-tabla-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .modal-tabla-selector select {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 12px;
+            background: #fff;
+            font-family: inherit;
+            color: var(--color-text);
+            min-width: 200px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+            cursor: pointer;
+        }
+
+        .modal-tabla-selector select:focus {
+            outline: none;
+            border-color: var(--color-blue);
+        }
+
+        .modal-tabla-selector input {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 12px;
+            min-width: 160px;
+        }
+
+        .modal-tabla-selector input:focus {
+            outline: none;
+            border-color: var(--color-blue);
+        }
+
+        .modal-tabla-selector select option {
+            background: #fff;
+            color: #1a1a2e;
+        }
+
+        /* ============================================================
+           ESTADO INICIAL
+           ============================================================ */
+        .sin-datos {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--color-text-light);
+        }
+
+        .sin-datos .icono-grande {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .sin-datos h2 {
+            font-size: 20px;
+            color: var(--color-primary);
+            margin-bottom: 6px;
+        }
+
+        .sin-datos p {
+            font-size: 13px;
+            max-width: 450px;
+            margin: 0 auto 6px auto;
+        }
+
+        .sin-datos .btn-cargar-destacado {
+            background: var(--color-accent);
+            color: var(--color-primary);
+            border: none;
+            padding: 10px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+
+        .sin-datos .btn-cargar-destacado:hover {
+            background: #e8b83a;
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 1100px) {
+            #main-grid {
+                grid-template-columns: 1fr;
+            }
+            #evolucion-panel {
+                grid-column: 1;
+            }
+            #tabla-panel {
+                grid-column: 1;
+                grid-row: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 60px;
+            }
+            .logo-wrapper {
+                padding: 10px 8px 12px 8px;
+            }
+            .logo {
+                padding: 8px 6px;
+                justify-content: center;
+                border-radius: 8px;
+            }
+            .logo .logo-text {
+                display: none;
+            }
+            .logo-icon {
+                width: 28px;
+                height: 22px;
+                gap: 2px;
+            }
+            .logo-icon span {
+                width: 5px;
+            }
+            .logo-icon span:nth-child(1) {
+                height: 8px;
+            }
+            .logo-icon span:nth-child(2) {
+                height: 13px;
+            }
+            .logo-icon span:nth-child(3) {
+                height: 18px;
+            }
+            .logo-icon span:nth-child(4) {
+                height: 21px;
+            }
+            #sidebar nav ul {
+                padding: 0 4px;
+            }
+            #sidebar nav ul li {
+                justify-content: center;
+                padding: 12px 0;
+                margin-bottom: 4px;
+                gap: 0;
+            }
+            #sidebar nav ul li .label {
+                display: none;
+            }
+            #sidebar nav ul li .icon {
+                font-size: 18px;
+                width: 24px;
+                margin-right: 0;
+            }
+            #sidebar nav ul li .flag {
+                width: 20px;
+                height: 20px;
+                margin-right: 0;
+            }
+            .nav-section {
+                display: none;
+            }
+
+            #main {
+                padding: 10px;
+                max-width: calc(100% - 60px);
+            }
+            #filtros {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #filtros .grupo {
+                min-width: 100%;
+            }
+            .custom-dropdown {
+                width: 100%;
+            }
+            #filtro-periodo,
+            #filtro-indicador {
+                width: 100%;
+            }
+            #cards {
+                grid-template-columns: 1fr 1fr;
+            }
+            #header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            #header .header-right {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                padding-top: 4px;
+            }
+            .titulo-dashboard h1 {
+                font-size: 18px;
+            }
+            .titulo-dashboard .subtitle {
+                font-size: 12px;
+            }
+            .table-scroll {
+                max-height: 200px;
+            }
+            .tabla-header-oscuro {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+                margin: -18px -16px 12px -16px;
+                padding: 10px 14px;
+            }
+            .tabla-header-oscuro .acciones {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            .ranking-item .barra-wrapper {
+                min-width: 30px;
+            }
+            .ranking-item .name {
+                min-width: 40px;
+                font-size: 10px;
+            }
+            .ranking-item .pos {
+                font-size: 11px;
+                min-width: 24px;
+            }
+            .eje-valores {
+                padding-left: 28px;
+                font-size: 8px;
+            }
+            .card-kpi {
+                padding: 14px 16px;
+                min-height: 100px;
+            }
+            .icon-circle {
+                width: 46px;
+                height: 46px;
+            }
+            .icon-circle svg {
+                width: 20px;
+                height: 20px;
+            }
+            .contenido .cartera {
+                font-size: 14px;
+            }
+            .contenido .fila .numero {
+                font-size: 19px;
+            }
+            .modal-content {
+                width: 100%;
+                max-height: 95vh;
+                border-radius: 12px;
+                max-width: 100%;
+            }
+            .modal-body {
+                padding: 14px 16px;
+            }
+            .modal-body .table-scroll table {
+                font-size: 10px;
+            }
+            .modal-body .table-scroll table thead th {
+                font-size: 8px;
+                padding: 4px 6px;
+            }
+            .modal-body .table-scroll table tbody td {
+                padding: 4px 6px;
+                font-size: 10px;
+            }
+            .modal-tabla-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .modal-tabla-selector select,
+            .modal-tabla-selector input {
+                min-width: 100%;
+            }
+            .evolucion-legend {
+                gap: 12px;
+                font-size: 10px;
+            }
+            .evolucion-legend .legend-item .line-sample {
+                width: 18px;
+                height: 2.5px;
+            }
+            .badge-pill {
+                font-size: 9px;
+                padding: 3px 10px;
+                max-width: 120px;
+            }
+            .panel {
+                padding: 14px 16px 12px 16px;
+            }
+            .panel .panel-header h3 {
+                font-size: 13px;
+            }
+            .icon-svg-evolucion {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #sidebar {
+                width: 48px;
+            }
+            .logo-wrapper {
+                padding: 6px 4px 8px 4px;
+            }
+            .logo {
+                padding: 6px 4px;
+                border-radius: 6px;
+            }
+            .logo-icon {
+                width: 22px;
+                height: 18px;
+                gap: 1.5px;
+            }
+            .logo-icon span {
+                width: 4px;
+            }
+            .logo-icon span:nth-child(1) {
+                height: 6px;
+            }
+            .logo-icon span:nth-child(2) {
+                height: 10px;
+            }
+            .logo-icon span:nth-child(3) {
+                height: 14px;
+            }
+            .logo-icon span:nth-child(4) {
+                height: 17px;
+            }
+            #sidebar nav ul li {
+                padding: 8px 0;
+            }
+            #sidebar nav ul li .icon {
+                font-size: 15px;
+                width: 20px;
+            }
+            #sidebar nav ul li .flag {
+                width: 16px;
+                height: 16px;
+            }
+
+            #main {
+                padding: 6px;
+                max-width: calc(100% - 48px);
+            }
+            #cards {
+                grid-template-columns: 1fr;
+            }
+            .ranking-item .barra-wrapper {
+                flex: 1;
+                min-width: 20px;
+            }
+            .ranking-item .valor {
+                min-width: 30px;
+                font-size: 10px;
+            }
+            .eje-valores {
+                padding-left: 20px;
+                font-size: 7px;
+            }
+            .sin-datos {
+                padding: 20px 10px;
+            }
+            .sin-datos .icono-grande {
+                font-size: 32px;
+            }
+            .sin-datos h2 {
+                font-size: 16px;
+            }
+            .card-kpi {
+                padding: 12px 14px;
+                min-height: 80px;
+                gap: 10px;
+            }
+            .icon-circle {
+                width: 38px;
+                height: 38px;
+            }
+            .icon-circle svg {
+                width: 16px;
+                height: 16px;
+            }
+            .contenido .cartera {
+                font-size: 12px;
+            }
+            .contenido .fila .numero {
+                font-size: 17px;
+            }
+            .contenido .titulo {
+                font-size: 9px;
+            }
+            .contenido .fila .texto {
+                font-size: 11px;
+            }
+            .contenido .variacion {
+                font-size: 10px;
+            }
+            .modal-content {
+                border-radius: 8px;
+            }
+            .modal-header {
+                padding: 12px 16px;
+            }
+            .modal-header h2 {
+                font-size: 15px;
+            }
+            .modal-body {
+                padding: 10px 12px;
+            }
+            .modal-footer {
+                padding: 10px 16px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .evolucion-legend {
+                gap: 10px;
+                font-size: 9px;
+            }
+            .evolucion-legend .legend-item .line-sample {
+                width: 14px;
+                height: 2px;
+            }
+            .badge-pill {
+                font-size: 8px;
+                padding: 2px 8px;
+                max-width: 80px;
+            }
+            .panel {
+                padding: 12px 12px 10px 12px;
+            }
+            .panel .panel-header h3 {
+                font-size: 12px;
+            }
+            .icon-svg-evolucion {
+                width: 14px;
+                height: 14px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f3f8;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c4c9d8;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0a8b8;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: var(--color-text-light);
+        }
+        .hidden {
+            display: none !important;
+        }
+        .fw-700 {
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    SIDEBAR
+    ============================================================ -->
+    <aside id="sidebar">
+
+        <div class="logo-wrapper">
+            <div class="logo">
+                <div class="logo-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="logo-text">
+                    MORNESE
+                    <small>Analytics</small>
+                </div>
+            </div>
+        </div>
+
+        <nav>
+            <div class="nav-section">Países</div>
+            <ul>
+                <li data-pais="Argentina">
+                    <img class="flag" src="https://flagcdn.com/w40/ar.png" alt="Argentina" />
+                    <span class="label">Argentina</span>
+                </li>
+                <li data-pais="Perú" class="active-country">
+                    <img class="flag" src="https://flagcdn.com/w40/pe.png" alt="Perú" />
+                    <span class="label">Perú</span>
+                </li>
+            </ul>
+
+            <div class="nav-section">Análisis</div>
+            <ul>
+                <li data-view="ranking" class="active">
+                    <span class="icon"><i class="fas fa-ranking-star"></i></span>
+                    <span class="label">Ranking</span>
+                </li>
+                <li data-view="evolucion">
+                    <span class="icon"><i class="fas fa-chart-line"></i></span>
+                    <span class="label">Evolución</span>
+                </li>
+                <li data-view="comparativo">
+                    <span class="icon"><i class="fas fa-scale-balanced"></i></span>
+                    <span class="label">Comparativo</span>
+                </li>
+                <li data-view="detalle">
+                    <span class="icon"><i class="fas fa-list"></i></span>
+                    <span class="label">Detalle Carteras</span>
+                </li>
+            </ul>
+
+            <div class="nav-section">Exportar</div>
+            <ul>
+                <li id="export-excel">
+                    <span class="icon"><i class="fas fa-file-excel" style="color: #22c55e;"></i></span>
+                    <span class="label">Exportar Excel</span>
+                </li>
+                <li id="export-pdf">
+                    <span class="icon"><i class="fas fa-file-pdf" style="color: #ef4444;"></i></span>
+                    <span class="label">Exportar PDF</span>
+                </li>
+            </ul>
+        </nav>
+
+    </aside>
+
+    <!-- ============================================================
+    MAIN CONTENT
+    ============================================================ -->
+    <div id="main">
+
+        <!-- HEADER -->
+        <header id="header">
+            <div class="titulo-dashboard">
+                <h1>ÍNDICES ESTRATÉGICOS</h1>
+                <div class="subtitle">Monitoreo de Carteras</div>
+            </div>
+            <div class="header-right">
+                <button class="cargar-excel-btn" id="btn-cargar-excel">
+                    <i class="fas fa-folder-open"></i> Cargar Excel
+                </button>
+                <input type="file" id="file-input-excel" accept=".xlsx,.xls" />
+                <span id="last-update-label">Actualización: <strong id="update-date">Sin datos</strong></span>
+                <button class="btn-refresh" id="btn-refresh" title="Refrescar">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- ESTADO INICIAL -->
+        <div id="estado-inicial" class="sin-datos">
+            <span class="icono-grande">📊</span>
+            <h2>Bienvenido a Índices Estratégicos</h2>
+            <p>Carga tu archivo Excel para comenzar a visualizar los datos.</p>
+            <p style="font-size:11px; color:var(--color-text-light);">
+                Columnas requeridas: PAIS, PERIODO, CARTERA, Efici Maxima, Efici Prome, Efici Propia, Honorario Promedio
+            </p>
+            <button class="btn-cargar-destacado" id="btn-cargar-inicial">📂 Seleccionar archivo Excel</button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard-contenido" style="display:none;">
+
+            <!-- FILTROS -->
+            <section id="filtros">
+                <!-- GRUPO PAÍS - DROPDOWN PERSONALIZADO -->
+                <div class="grupo">
+                    <label for="filtro-pais"><i class="fas fa-globe-americas"></i>País</label>
+                    <div class="custom-dropdown" id="pais-dropdown">
+                        <div class="dropdown-select" id="pais-selector">
+                            <span class="globe-fixed"><i class="fas fa-globe-americas" style="font-size:13px;color:#6B7280;"></i></span>
+                            <span class="selected-text" id="pais-selected">
+                                <span class="globe-icon">🌍</span>
+                                <span>Todos</span>
+                            </span>
+                            <span class="arrow" id="pais-arrow"><i class="fas fa-chevron-down"></i></span>
+                        </div>
+                        <div class="dropdown-options" id="pais-options">
+                            <div class="option active" data-value="todos">
+                                <span class="globe-icon">🌍</span>
+                                <span>Todos</span>
+                                <span class="check"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="option" data-value="Argentina">
+                                <img class="flag-icon" src="https://flagcdn.com/w40/ar.png" alt="Argentina" />
+                                <span>Argentina</span>
+                                <span class="check"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="option" data-value="Perú">
+                                <img class="flag-icon" src="https://flagcdn.com/w40/pe.png" alt="Perú" />
+                                <span>Perú</span>
+                                <span class="check"><i class="fas fa-check"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRUPO PERÍODO -->
+                <div class="grupo">
+                    <label for="filtro-periodo"><i class="fas fa-calendar-alt"></i>Período</label>
+                    <select id="filtro-periodo">
+                        <option value="">-- Seleccionar --</option>
+                    </select>
+                </div>
+
+                <!-- GRUPO INDICADOR -->
+                <div class="grupo">
+                    <label for="filtro-indicador"><i class="fas fa-chart-simple"></i>Indicador</label>
+                    <select id="filtro-indicador">
+                        <option value="ie_propia">IE Propia</option>
+                        <option value="ie_maxima">IE Máxima</option>
+                        <option value="ie_promedio">IE Promedio</option>
+                    </select>
+                </div>
+
+                <!-- BOTÓN LIMPIAR -->
+                <button class="btn-limpiar" id="btn-limpiar">
+                    <i class="fas fa-undo-alt"></i> Limpiar filtros
+                </button>
+            </section>
+
+            <!-- TARJETAS -->
+            <section id="cards">
+
+                <!-- TARJETA 1 - MEJOR CARTERA (AZUL) -->
+                <div class="card-kpi blue" id="kpi-mejor">
+                    <div class="icon-circle">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 9H4.5C3.67157 9 3 8.32843 3 7.5V5.5C3 4.67157 3.67157 4 4.5 4H6" />
+                            <path d="M18 9H19.5C20.3284 9 21 8.32843 21 7.5V5.5C21 4.67157 20.3284 4 19.5 4H18" />
+                            <path d="M6 4V12C6 14.2091 7.79086 16 10 16H14C16.2091 16 18 14.2091 18 12V4" />
+                            <path d="M12 16V20" />
+                            <path d="M8 20H16" />
+                        </svg>
+                    </div>
+                    <div class="contenido">
+                        <div class="titulo">Mejor Cartera</div>
+                        <div class="cartera" id="kpi-mejor-nombre">Seleccione un período</div>
+                        <div class="fila">
+                            <span class="texto">IE Propia</span>
+                            <span class="numero" id="kpi-mejor-valor">--</span>
+                        </div>
+                        <div class="variacion">
+                            <span class="up" id="kpi-mejor-variacion">▲ 0%</span>
+                            <span class="vs">vs. período anterior</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TARJETA 2 - PROMEDIO GENERAL (MORADO) -->
+                <div class="card-kpi purple" id="kpi-promedio">
+                    <div class="icon-circle">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 20V10" />
+                            <path d="M18 20V4" />
+                            <path d="M6 20V16" />
+                        </svg>
+                    </div>
+                    <div class="contenido">
+                        <div class="titulo">IE Propio Promedio</div>
+                        <div class="cartera" id="kpi-promedio-nombre">Promedio General</div>
+                        <div class="fila">
+                            <span class="texto">IE Propia</span>
+                            <span class="numero" id="kpi-promedio-valor">--</span>
+                        </div>
+                        <div class="variacion">
+                            <span class="up" id="kpi-promedio-variacion">▲ 0%</span>
+                            <span class="vs">vs. período anterior</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TARJETA 3 - CARTERAS ACTIVAS (VERDE) -->
+                <div class="card-kpi green" id="kpi-carteras">
+                    <div class="icon-circle">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 20H20C21.1046 20 22 19.1046 22 18V8C22 6.89543 21.1046 6 20 6H12L10 4H4C2.89543 4 2 4.89543 2 6V18C2 19.1046 2.89543 20 4 20Z" />
+                        </svg>
+                    </div>
+                    <div class="contenido">
+                        <div class="titulo">Carteras Activas</div>
+                        <div class="cartera" id="kpi-carteras-nombre">Carteras</div>
+                        <div class="fila">
+                            <span class="texto">Total</span>
+                            <span class="numero" id="kpi-carteras-valor">--</span>
+                        </div>
+                        <div class="variacion">
+                            <span class="up" id="kpi-carteras-variacion">▲ 0</span>
+                            <span class="vs">carteras activas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TARJETA 4 - PEOR CARTERA (ROJO) -->
+                <div class="card-kpi red" id="kpi-peor">
+                    <div class="icon-circle">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 9V12" />
+                            <path d="M12 15H12.01" />
+                            <path d="M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3Z" />
+                        </svg>
+                    </div>
+                    <div class="contenido">
+                        <div class="titulo">Peor Cartera</div>
+                        <div class="cartera" id="kpi-peor-nombre">Seleccione un período</div>
+                        <div class="fila">
+                            <span class="texto">IE Propia</span>
+                            <span class="numero" id="kpi-peor-valor">--</span>
+                        </div>
+                        <div class="variacion">
+                            <span class="down" id="kpi-peor-variacion">▼ 0%</span>
+                            <span class="vs">vs. período anterior</span>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- GRID PRINCIPAL -->
+            <section id="main-grid">
+
+                <!-- PANEL 1: RANKING IE PROPIA -->
+                <div class="panel" id="panel-ranking">
+                    <div class="panel-header">
+                        <div class="panel-header-left">
+                            <h3>🏆 Ranking <span id="ranking-mensual-titulo">IE Propia</span></h3>
+                            <button class="btn-expand-panel" id="expand-ranking" title="Ampliar">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <span class="badge periodo" id="ranking-mensual-periodo">--</span>
+                    </div>
+                    <div class="ranking-container" id="ranking-mensual-container">
+                        <div id="ranking-mensual-lista">
+                            <div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>
+                        </div>
+                    </div>
+                    <div class="eje-valores">
+                        <span class="eje-min">0</span>
+                        <span class="eje-max" id="eje-mensual-max">1.0</span>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: RANKING PROMEDIO -->
+                <div class="panel" id="panel-ranking-promedio">
+                    <div class="panel-header">
+                        <div class="panel-header-left">
+                            <h3>📈 Ranking Promedio <span id="ranking-promedio-titulo">IE Propia</span></h3>
+                            <button class="btn-expand-panel" id="expand-ranking-promedio" title="Ampliar">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <span class="badge">últimos 3 meses</span>
+                    </div>
+                    <div class="ranking-container purple-scroll" id="ranking-promedio-container">
+                        <div id="ranking-promedio-lista">
+                            <div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>
+                        </div>
+                    </div>
+                    <div class="eje-valores">
+                        <span class="eje-min">0</span>
+                        <span class="eje-max" id="eje-promedio-max">1.0</span>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: EVOLUCION IE POR CARTERA (PREMIUM) -->
+                <div class="panel" id="evolucion-panel">
+                    <div class="panel-header">
+                        <div class="panel-header-left">
+                            <!-- Icono SVG en lugar de emoji -->
+                            <span class="icon-svg-evolucion">
+                                <svg viewBox="0 0 24 24">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                            </span>
+                            <h3>Evolución IE por Cartera</h3>
+                            <button class="btn-expand-panel" id="expand-evolucion" title="Ampliar">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <span class="badge-pill" id="evolucion-cartera-nombre">seleccione una cartera</span>
+                    </div>
+                    <div class="evolucion-container">
+                        <canvas id="evolucion-chart" height="130"></canvas>
+                    </div>
+                    <!-- Leyenda con líneas -->
+                    <div class="evolucion-legend">
+                        <span class="legend-item">
+                            <span class="line-sample maxima"></span> IE Máxima
+                        </span>
+                        <span class="legend-item">
+                            <span class="line-sample promedio"></span> IE Promedio
+                        </span>
+                        <span class="legend-item">
+                            <span class="line-sample propia"></span> IE Propia
+                        </span>
+                    </div>
+                </div>
+
+                <!-- PANEL 4: TABLA DETALLE CARTERAS -->
+                <div class="panel" id="tabla-panel">
+                    <div class="tabla-header-oscuro">
+                        <h3>📋 Detalle de Carteras</h3>
+                        <div class="acciones">
+                            <select id="tabla-tipo-dato">
+                                <!-- Las opciones se llenan dinámicamente con JavaScript -->
+                            </select>
+                            <input type="text" id="tabla-buscar" placeholder="🔍 Buscar cartera..." />
+                            <button class="btn-icon btn-excel" id="btn-export-tabla-excel" title="Exportar a Excel">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                            <button class="btn-icon btn-pdf" id="btn-export-tabla-pdf" title="Exportar a PDF">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn-icon btn-expand" id="btn-expand-tabla" title="Ampliar tabla">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-scroll" id="tabla-scroll">
+                        <table id="tabla-carteras">
+                            <thead>
+                                <tr>
+                                    <th data-col="cartera" class="active">Cartera <span class="sort-icon">↕</span></th>
+                                    <th data-col="honorario">Hon. <span class="sort-icon">↕</span></th>
+                                    <th data-col="efici_maxima">Ef. Máx <span class="sort-icon">↕</span></th>
+                                    <th data-col="efici_prome">Ef. Prom <span class="sort-icon">↕</span></th>
+                                    <th data-col="efici_propia">Ef. Prop <span class="sort-icon">↕</span></th>
+                                    <th data-col="ie_maxima">IE Máx <span class="sort-icon">↕</span></th>
+                                    <th data-col="ie_promedio">IE Prom <span class="sort-icon">↕</span></th>
+                                    <th data-col="ie_propia">IE Prop <span class="sort-icon">↕</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-body">
+                                <tr><td colspan="8" class="text-center text-muted">Sin datos</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <span id="tabla-info">Mostrando 0 a 0 de 0</span>
+                        <div class="paginacion" id="tabla-paginacion">
+                            <button id="pag-prev" disabled>◀</button>
+                            <span id="pag-info">1 / 1</span>
+                            <button id="pag-next" disabled>▶</button>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- FOOTER -->
+            <footer style="text-align:center; font-size:10px; color:var(--color-text-light); padding:8px 0 2px 0; border-top:1px solid var(--color-border); margin-top:6px;">
+                &copy; 2026 Mornese Analytics &mdash; Todos los derechos reservados.
+            </footer>
+
+        </div><!-- fin dashboard-contenido -->
+
+    </div>
+
+    <!-- ============================================================
+    MODALES
+    ============================================================ -->
+
+    <!-- MODAL RANKING -->
+    <div class="modal-overlay" id="modal-ranking">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏆 Ranking <span id="modal-ranking-titulo">IE Propia</span></h2>
+                <button class="btn-close modal-close" data-modal="modal-ranking">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="ranking-container" id="modal-ranking-container">
+                    <div id="modal-ranking-lista">
+                        <div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>
+                    </div>
+                </div>
+                <div class="eje-valores" id="modal-ranking-eje">
+                    <span class="eje-min">0</span>
+                    <span class="eje-max" id="modal-eje-max">1.0</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span id="modal-ranking-info">Ranking de carteras</span>
+                <div class="acciones-modal">
+                    <button class="btn-excel-modal" id="modal-ranking-excel">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button class="btn-pdf-modal" id="modal-ranking-pdf">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RANKING PROMEDIO -->
+    <div class="modal-overlay" id="modal-ranking-promedio-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📈 Ranking Promedio <span id="modal-ranking-promedio-titulo">IE Propia</span></h2>
+                <button class="btn-close modal-close" data-modal="modal-ranking-promedio-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="ranking-container purple-scroll" id="modal-ranking-promedio-container">
+                    <div id="modal-ranking-promedio-lista">
+                        <div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>
+                    </div>
+                </div>
+                <div class="eje-valores" id="modal-ranking-promedio-eje">
+                    <span class="eje-min">0</span>
+                    <span class="eje-max" id="modal-promedio-eje-max">1.0</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span id="modal-ranking-promedio-info">Ranking promedio últimos 3 meses</span>
+                <div class="acciones-modal">
+                    <button class="btn-excel-modal" id="modal-ranking-promedio-excel">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button class="btn-pdf-modal" id="modal-ranking-promedio-pdf">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EVOLUCION (PREMIUM) -->
+    <div class="modal-overlay" id="modal-evolucion">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📉 Evolución IE por Cartera</h2>
+                <button class="btn-close modal-close" data-modal="modal-evolucion">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom:12px;">
+                    <span class="badge-pill" id="modal-evolucion-cartera">seleccione una cartera</span>
+                </div>
+                <div class="evolucion-container">
+                    <canvas id="modal-evolucion-chart" height="280"></canvas>
+                </div>
+                <div class="evolucion-legend" style="margin-top:14px;">
+                    <span class="legend-item">
+                        <span class="line-sample maxima"></span> IE Máxima
+                    </span>
+                    <span class="legend-item">
+                        <span class="line-sample promedio"></span> IE Promedio
+                    </span>
+                    <span class="legend-item">
+                        <span class="line-sample propia"></span> IE Propia
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span id="modal-evolucion-info">Evolución histórica</span>
+                <div class="acciones-modal">
+                    <button class="btn-excel-modal" id="modal-evolucion-excel">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button class="btn-pdf-modal" id="modal-evolucion-pdf">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TABLA -->
+    <div class="modal-overlay" id="modal-tabla">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Detalle de Carteras</h2>
+                <button class="btn-close modal-close" data-modal="modal-tabla">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabla-selector">
+                    <select id="modal-tabla-tipo-dato">
+                        <!-- Las opciones se llenan dinámicamente con JavaScript -->
+                    </select>
+                    <input type="text" id="modal-tabla-buscar" placeholder="🔍 Buscar cartera..." />
+                    <button class="btn-icon btn-excel" id="modal-tabla-excel-btn" title="Exportar a Excel" style="background:#2DBE60;color:#fff;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button class="btn-icon btn-pdf" id="modal-tabla-pdf-btn" title="Exportar a PDF" style="background:#FF3131;color:#fff;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+                <div class="table-scroll">
+                    <table id="modal-tabla-body">
+                        <thead>
+                            <tr>
+                                <th data-col="cartera" class="active">Cartera <span class="sort-icon">↕</span></th>
+                                <th data-col="honorario">Hon. <span class="sort-icon">↕</span></th>
+                                <th data-col="efici_maxima">Ef. Máx <span class="sort-icon">↕</span></th>
+                                <th data-col="efici_prome">Ef. Prom <span class="sort-icon">↕</span></th>
+                                <th data-col="efici_propia">Ef. Prop <span class="sort-icon">↕</span></th>
+                                <th data-col="ie_maxima">IE Máx <span class="sort-icon">↕</span></th>
+                                <th data-col="ie_promedio">IE Prom <span class="sort-icon">↕</span></th>
+                                <th data-col="ie_propia">IE Prop <span class="sort-icon">↕</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-tabla-body-content">
+                            <tr><td colspan="8" class="text-center text-muted">Sin datos</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span id="modal-tabla-info">Mostrando 0 a 0 de 0 carteras</span>
+                <div class="acciones-modal">
+                    <button class="btn-excel-modal" id="modal-tabla-export-excel">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button class="btn-pdf-modal" id="modal-tabla-export-pdf">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    JAVASCRIPT COMPLETO
+    ============================================================ -->
+    <script>
+        // ================================================================
+        // ESTADO GLOBAL
+        // ================================================================
+        let datos = [];
+        let datosFiltrados = [];
+        let periodos = [];
+        let chartEvolucion = null;
+        let chartModalEvolucion = null;
+        let datosCargados = false;
+
+        const estado = {
+            pais: 'todos',
+            periodo: '',
+            indicador: 'ie_propia',
+            carteraSeleccionada: null,
+            page: 1,
+            pageSize: 8,
+            sortCol: 'cartera',
+            sortDir: 'asc',
+            busqueda: '',
+            tablaTipo: 'mensual',
+            tablaPeriodoSeleccionado: '',
+        };
+
+        const INDICADOR_LABEL = {
+            ie_maxima: 'IE Máxima',
+            ie_promedio: 'IE Promedio',
+            ie_propia: 'IE Propia'
+        };
+
+        // Colores: ROJO, VERDE, AZUL
+        const COLORES_EVOLUCION = {
+            maxima: '#FF3131',
+            promedio: '#2DBE60',
+            propia: '#1E5EFF'
+        };
+
+        // ================================================================
+        // UTILITIES
+        // ================================================================
+        function fmt(v) {
+            if (v === undefined || v === null || isNaN(v)) return '--';
+            return Number(v).toFixed(4);
+        }
+
+        function fmtPct(v) {
+            if (v === undefined || v === null || isNaN(v)) return '--';
+            return (Number(v) * 100).toFixed(2) + '%';
+        }
+
+        function fmtIE(v) {
+            if (v === undefined || v === null || isNaN(v)) return '--';
+            return Number(v).toFixed(2);
+        }
+
+        function calcularIE(row, tipo) {
+            const h = row.honorario_promedio || 0;
+            if (tipo === 'ie_maxima') return (row.efici_maxima || 0) * h * 100;
+            if (tipo === 'ie_promedio') return (row.efici_prome || 0) * h * 100;
+            if (tipo === 'ie_propia') return (row.efici_propia || 0) * h * 100;
+            return 0;
+        }
+
+        function getIE(row, tipo) {
+            return calcularIE(row, tipo);
+        }
+
+        function nombreMes(m) {
+            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+            return meses[parseInt(m) - 1] || m;
+        }
+
+        function formatoPeriodo(p) {
+            if (!p || p.length !== 6) return p;
+            const year = p.substring(0, 4);
+            const month = p.substring(4, 6);
+            return `${nombreMes(month)} ${year}`;
+        }
+
+        function obtenerUltimosPeriodos(periodosArray, n = 3) {
+            const sorted = [...periodosArray].sort().reverse();
+            return sorted.slice(0, n);
+        }
+
+        // ================================================================
+        // FUNCIÓN PARA CREAR DEGRADADO (para IE Propia)
+        // ================================================================
+        function createGradient(ctx, color, height) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, height || 150);
+            gradient.addColorStop(0, color + '30');
+            gradient.addColorStop(0.4, color + '15');
+            gradient.addColorStop(1, color + '02');
+            return gradient;
+        }
+
+        // ================================================================
+        // PLUGIN PARA LÍNEA VERTICAL (CROSSHAIR) - AZUL TENUE
+        // ================================================================
+        const crosshairPlugin = {
+            id: 'crosshair',
+            beforeDraw: function(chart) {
+                const activeElements = chart.tooltip._active || [];
+                if (activeElements.length === 0) {
+                    return;
+                }
+
+                const ctx = chart.ctx;
+                const x = activeElements[0].element.x;
+                const chartArea = chart.chartArea;
+
+                if (x < chartArea.left || x > chartArea.right) {
+                    return;
+                }
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(x, chartArea.top);
+                ctx.lineTo(x, chartArea.bottom);
+                ctx.strokeStyle = 'rgba(30,94,255,0.20)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([3, 3]);
+                ctx.stroke();
+                ctx.restore();
+            }
+        };
+
+        // ================================================================
+        // DROPDOWN PERSONALIZADO PARA PAÍS
+        // ================================================================
+        const dropdown = document.getElementById('pais-dropdown');
+        const selector = document.getElementById('pais-selector');
+        const optionsContainer = document.getElementById('pais-options');
+        const selectedText = document.getElementById('pais-selected');
+        const arrow = document.getElementById('pais-arrow');
+        const options = optionsContainer.querySelectorAll('.option');
+        let isOpen = false;
+
+        selector.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+
+        function toggleDropdown() {
+            isOpen = !isOpen;
+            optionsContainer.classList.toggle('open', isOpen);
+            arrow.classList.toggle('open', isOpen);
+        }
+
+        options.forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const value = this.dataset.value;
+                const labelText = this.querySelector('span:not(.check):not(.globe-icon)')?.textContent || this
+                    .textContent.trim();
+
+                options.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+
+                const iconClone = this.querySelector('.flag-icon')?.cloneNode(true) ||
+                    this.querySelector('.globe-icon')?.cloneNode(true);
+
+                selectedText.innerHTML = '';
+                if (iconClone) {
+                    selectedText.appendChild(iconClone);
+                } else {
+                    const span = document.createElement('span');
+                    span.textContent = '🌍';
+                    selectedText.appendChild(span);
+                }
+                const labelSpan = document.createElement('span');
+                labelSpan.textContent = labelText || 'Todos';
+                selectedText.appendChild(labelSpan);
+
+                if (isOpen) toggleDropdown();
+
+                estado.pais = value;
+                estado.page = 1;
+                aplicarFiltros();
+            });
+        });
+
+        document.addEventListener('click', function() {
+            if (isOpen) {
+                optionsContainer.classList.remove('open');
+                arrow.classList.remove('open');
+                isOpen = false;
+            }
+        });
+
+        // ================================================================
+        // PROCESAR DATOS EXCEL
+        // ================================================================
+        function procesarDatosExcel(json) {
+            const raw = json
+                .filter(row => row.PAIS && row.PERIODO && row.CARTERA)
+                .map(row => ({
+                    pais: String(row.PAIS).trim(),
+                    periodo: String(row.PERIODO).trim(),
+                    cartera: String(row.CARTERA).trim(),
+                    efici_maxima: parseFloat(row['Efici Maxima']) || 0,
+                    efici_prome: parseFloat(row['Efici Prome']) || 0,
+                    efici_propia: parseFloat(row['Efici Propia']) || 0,
+                    honorario_promedio: parseFloat(row['Honorario Promedio']) || 0,
+                }));
+
+            if (raw.length === 0) {
+                alert('No se encontraron datos en el archivo. Verifica las columnas.');
+                return false;
+            }
+
+            raw.forEach(row => {
+                row.ie_maxima = calcularIE(row, 'ie_maxima');
+                row.ie_promedio = calcularIE(row, 'ie_promedio');
+                row.ie_propia = calcularIE(row, 'ie_propia');
+            });
+
+            datos = raw;
+            periodos = [...new Set(datos.map(d => d.periodo))].sort();
+
+            document.getElementById('update-date').textContent = new Date().toLocaleString('es-ES');
+
+            document.getElementById('estado-inicial').style.display = 'none';
+            document.getElementById('dashboard-contenido').style.display = 'block';
+
+            datosCargados = true;
+            inicializarFiltros();
+            inicializarSelectoresTabla();
+            aplicarFiltros();
+            return true;
+        }
+
+        // ================================================================
+        // INICIALIZAR FILTROS
+        // ================================================================
+        function inicializarFiltros() {
+            const periodoSelect = document.getElementById('filtro-periodo');
+            periodoSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+            periodos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = formatoPeriodo(p);
+                periodoSelect.appendChild(opt);
+            });
+
+            if (periodos.length > 0) {
+                const ultimo = periodos[periodos.length - 1];
+                periodoSelect.value = ultimo;
+                estado.periodo = ultimo;
+            }
+
+            document.getElementById('filtro-indicador').value = 'ie_propia';
+            estado.indicador = 'ie_propia';
+
+            const defaultOption = optionsContainer.querySelector('.option[data-value="todos"]');
+            if (defaultOption) {
+                options.forEach(opt => opt.classList.remove('active'));
+                defaultOption.classList.add('active');
+                selectedText.innerHTML = '<span class="globe-icon">🌍</span><span>Todos</span>';
+            }
+        }
+
+        // ================================================================
+        // INICIALIZAR SELECTORES DE TABLA
+        // ================================================================
+        function inicializarSelectoresTabla() {
+            const selectores = [
+                document.getElementById('tabla-tipo-dato'),
+                document.getElementById('modal-tabla-tipo-dato')
+            ];
+
+            selectores.forEach(select => {
+                if (!select) return;
+                select.innerHTML = '';
+
+                const optPromedio = document.createElement('option');
+                optPromedio.value = 'promedio';
+                optPromedio.textContent = '📊 Promedio últimos 3 meses';
+                select.appendChild(optPromedio);
+
+                const sortedPeriodos = [...periodos].sort().reverse();
+                sortedPeriodos.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = 'mensual_' + p;
+                    opt.textContent = '📅 ' + formatoPeriodo(p);
+                    select.appendChild(opt);
+                });
+
+                if (periodos.length > 0) {
+                    select.value = 'mensual_' + periodos[periodos.length - 1];
+                    estado.tablaPeriodoSeleccionado = periodos[periodos.length - 1];
+                    estado.tablaTipo = 'mensual';
+                } else {
+                    select.value = 'promedio';
+                    estado.tablaTipo = 'promedio';
+                    estado.tablaPeriodoSeleccionado = '';
+                }
+            });
+        }
+
+        // ================================================================
+        // APLICAR FILTROS
+        // ================================================================
+        function aplicarFiltros() {
+            if (!datosCargados || datos.length === 0) return;
+
+            const pais = estado.pais;
+            const periodo = estado.periodo;
+            const indicador = estado.indicador;
+            const busqueda = estado.busqueda.toLowerCase().trim();
+
+            datosFiltrados = datos.filter(row => {
+                if (pais !== 'todos' && row.pais !== pais) return false;
+                if (periodo && row.periodo !== periodo) return false;
+                if (busqueda && !row.cartera.toLowerCase().includes(busqueda)) return false;
+                return true;
+            });
+
+            const col = estado.sortCol;
+            const dir = estado.sortDir === 'asc' ? 1 : -1;
+            datosFiltrados.sort((a, b) => {
+                let va = a[col] || 0;
+                let vb = b[col] || 0;
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+                if (va < vb) return -1 * dir;
+                if (va > vb) return 1 * dir;
+                return 0;
+            });
+
+            actualizarKPIs();
+            actualizarRankingMensual();
+            actualizarRankingPromedio();
+            actualizarEvolucionPremium();
+            actualizarTabla();
+            actualizarModales();
+            seleccionarMejorCarteraEvolucion();
+        }
+
+        // ================================================================
+        // SELECCIONAR AUTOMÁTICAMENTE LA MEJOR CARTERA PARA EVOLUCIÓN
+        // ================================================================
+        function seleccionarMejorCarteraEvolucion() {
+            if (!datosCargados || datos.length === 0 || !periodos.length) return;
+
+            const ultimoPeriodo = periodos[periodos.length - 1];
+            const indicador = estado.indicador;
+
+            let dataUltimoPeriodo = datos.filter(r => r.periodo === ultimoPeriodo);
+            if (estado.pais !== 'todos') {
+                dataUltimoPeriodo = dataUltimoPeriodo.filter(r => r.pais === estado.pais);
+            }
+
+            if (dataUltimoPeriodo.length === 0) return;
+
+            const sorted = [...dataUltimoPeriodo].sort((a, b) => getIE(b, indicador) - getIE(a, indicador));
+            const mejorCartera = sorted[0];
+
+            if (mejorCartera) {
+                estado.carteraSeleccionada = mejorCartera.cartera;
+                actualizarEvolucionPremium();
+                if (document.getElementById('modal-evolucion').classList.contains('active')) {
+                    actualizarModalEvolucionPremium();
+                }
+            }
+        }
+
+        // ================================================================
+        // ACTUALIZAR KPIs
+        // ================================================================
+        function actualizarKPIs() {
+            const indicador = estado.indicador;
+            const periodo = estado.periodo;
+
+            if (!periodo || datosFiltrados.length === 0) {
+                document.getElementById('kpi-mejor-valor').textContent = '--';
+                document.getElementById('kpi-mejor-nombre').textContent = 'Seleccione un período';
+                document.getElementById('kpi-mejor-variacion').textContent = '▲ 0%';
+
+                document.getElementById('kpi-promedio-valor').textContent = '--';
+                document.getElementById('kpi-promedio-nombre').textContent = 'Promedio General';
+                document.getElementById('kpi-promedio-variacion').textContent = '▲ 0%';
+
+                document.getElementById('kpi-carteras-valor').textContent = '--';
+                document.getElementById('kpi-carteras-nombre').textContent = 'Carteras';
+                document.getElementById('kpi-carteras-variacion').textContent = '▲ 0';
+
+                document.getElementById('kpi-peor-valor').textContent = '--';
+                document.getElementById('kpi-peor-nombre').textContent = 'Seleccione un período';
+                document.getElementById('kpi-peor-variacion').textContent = '▼ 0%';
+                return;
+            }
+
+            const data = datosFiltrados.filter(r => r.periodo === periodo);
+            if (data.length === 0) {
+                document.getElementById('kpi-mejor-valor').textContent = '--';
+                document.getElementById('kpi-mejor-nombre').textContent = 'Sin datos';
+                document.getElementById('kpi-mejor-variacion').textContent = '▲ 0%';
+
+                document.getElementById('kpi-promedio-valor').textContent = '--';
+                document.getElementById('kpi-promedio-nombre').textContent = 'Sin datos';
+                document.getElementById('kpi-promedio-variacion').textContent = '▲ 0%';
+
+                document.getElementById('kpi-carteras-valor').textContent = '0';
+                document.getElementById('kpi-carteras-nombre').textContent = 'Sin carteras';
+                document.getElementById('kpi-carteras-variacion').textContent = '▲ 0';
+
+                document.getElementById('kpi-peor-valor').textContent = '--';
+                document.getElementById('kpi-peor-nombre').textContent = 'Sin datos';
+                document.getElementById('kpi-peor-variacion').textContent = '▼ 0%';
+                return;
+            }
+
+            const sorted = [...data].sort((a, b) => getIE(b, indicador) - getIE(a, indicador));
+            const mejor = sorted[0];
+            const peor = sorted[sorted.length - 1];
+            const sum = data.reduce((acc, r) => acc + getIE(r, indicador), 0);
+            const avg = sum / data.length;
+
+            document.getElementById('kpi-mejor-valor').textContent = fmtIE(getIE(mejor, indicador));
+            document.getElementById('kpi-mejor-nombre').textContent = mejor.cartera;
+            document.getElementById('kpi-mejor-variacion').textContent = `▲ ${fmtIE(getIE(mejor, indicador))}`;
+
+            document.getElementById('kpi-promedio-valor').textContent = fmtIE(avg);
+            document.getElementById('kpi-promedio-nombre').textContent = `Promedio General (${data.length})`;
+            document.getElementById('kpi-promedio-variacion').textContent = `▲ ${fmtIE(avg)}`;
+
+            document.getElementById('kpi-carteras-valor').textContent = data.length;
+            document.getElementById('kpi-carteras-nombre').textContent = 'Carteras activas';
+            document.getElementById('kpi-carteras-variacion').textContent = `▲ ${data.length} activas`;
+
+            document.getElementById('kpi-peor-valor').textContent = fmtIE(getIE(peor, indicador));
+            document.getElementById('kpi-peor-nombre').textContent = peor.cartera;
+            document.getElementById('kpi-peor-variacion').textContent = `▼ ${fmtIE(getIE(peor, indicador))}`;
+        }
+
+        // ================================================================
+        // ACTUALIZAR RANKING MENSUAL
+        // ================================================================
+        function actualizarRankingMensual() {
+            const indicador = estado.indicador;
+            const periodo = estado.periodo;
+            const lista = document.getElementById('ranking-mensual-lista');
+
+            if (!periodo) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>';
+                return;
+            }
+
+            const data = datosFiltrados.filter(r => r.periodo === periodo);
+            if (data.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Sin datos para este período</div>';
+                return;
+            }
+
+            const sorted = [...data].sort((a, b) => getIE(b, indicador) - getIE(a, indicador));
+            const maxVal = sorted.length > 0 ? getIE(sorted[0], indicador) : 1;
+
+            document.getElementById('ranking-mensual-titulo').textContent = INDICADOR_LABEL[indicador];
+            document.getElementById('ranking-mensual-periodo').textContent = formatoPeriodo(periodo);
+            document.getElementById('eje-mensual-max').textContent = fmtIE(maxVal);
+
+            const html = sorted.map((row, i) => {
+                const pos = i + 1;
+                const val = getIE(row, indicador);
+                const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
+                const cls = pos === 1 ? 'top1' : '';
+                const sel = estado.carteraSeleccionada === row.cartera ? 'seleccionada' : '';
+                return `<div class="ranking-item ${cls} ${sel}" data-cartera="${row.cartera}">
+                            <div class="pos">#${pos}</div>
+                            <div class="name">${row.cartera}</div>
+                            <div class="barra-wrapper">
+                                <div class="barra" style="width:${Math.max(pct, 4)}%;"></div>
+                            </div>
+                            <div class="valor">${fmtIE(val)}</div>
+                        </div>`;
+            }).join('');
+
+            lista.innerHTML = html;
+
+            lista.querySelectorAll('.ranking-item[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    estado.carteraSeleccionada = this.dataset.cartera;
+                    aplicarFiltros();
+                });
+            });
+        }
+
+        // ================================================================
+        // ACTUALIZAR RANKING PROMEDIO
+        // ================================================================
+        function actualizarRankingPromedio() {
+            const indicador = estado.indicador;
+            const lista = document.getElementById('ranking-promedio-lista');
+
+            if (periodos.length < 1) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">No hay períodos disponibles</div>';
+                return;
+            }
+
+            const ultimos = obtenerUltimosPeriodos(periodos, 3);
+            if (ultimos.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">No hay datos suficientes</div>';
+                return;
+            }
+
+            let data = datos;
+            if (estado.pais !== 'todos') {
+                data = data.filter(r => r.pais === estado.pais);
+            }
+
+            const carteras = [...new Set(data.map(r => r.cartera))];
+            const promedios = carteras.map(cartera => {
+                const rows = data.filter(r => r.cartera === cartera && ultimos.includes(r.periodo));
+                if (rows.length === 0) return null;
+                const sum = rows.reduce((acc, r) => acc + getIE(r, indicador), 0);
+                return { cartera, promedio: sum / rows.length, count: rows.length };
+            }).filter(r => r !== null && r.count > 0);
+
+            if (promedios.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Sin datos para el promedio</div>';
+                return;
+            }
+
+            const sorted = promedios.sort((a, b) => b.promedio - a.promedio);
+            const maxVal = sorted.length > 0 ? sorted[0].promedio : 1;
+            const top = sorted.slice(0, 20);
+
+            document.getElementById('ranking-promedio-titulo').textContent = INDICADOR_LABEL[indicador];
+            document.getElementById('eje-promedio-max').textContent = fmtIE(maxVal);
+
+            const html = top.map((row, i) => {
+                const pos = i + 1;
+                const pct = maxVal > 0 ? (row.promedio / maxVal) * 100 : 0;
+                const cls = pos === 1 ? 'top1' : '';
+                const sel = estado.carteraSeleccionada === row.cartera ? 'seleccionada' : '';
+                return `<div class="ranking-item ${cls} ${sel}" data-cartera="${row.cartera}">
+                            <div class="pos">#${pos}</div>
+                            <div class="name">${row.cartera}</div>
+                            <div class="barra-wrapper">
+                                <div class="barra" style="width:${Math.max(pct, 4)}%;"></div>
+                            </div>
+                            <div class="valor">${fmtIE(row.promedio)}</div>
+                        </div>`;
+            }).join('');
+
+            lista.innerHTML = html;
+
+            lista.querySelectorAll('.ranking-item[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    estado.carteraSeleccionada = this.dataset.cartera;
+                    aplicarFiltros();
+                });
+            });
+        }
+
+        // ================================================================
+        // ACTUALIZAR EVOLUCION PREMIUM
+        // ================================================================
+        function actualizarEvolucionPremium() {
+            const canvas = document.getElementById('evolucion-chart');
+            const nombreLabel = document.getElementById('evolucion-cartera-nombre');
+
+            if (!estado.carteraSeleccionada) {
+                nombreLabel.textContent = 'seleccione una cartera';
+                if (chartEvolucion) { chartEvolucion.destroy();
+                    chartEvolucion = null; }
+                return;
+            }
+
+            const cartera = estado.carteraSeleccionada;
+
+            let data = datos.filter(r => r.cartera === cartera);
+            if (estado.pais !== 'todos') {
+                data = data.filter(r => r.pais === estado.pais);
+            }
+
+            if (data.length === 0) {
+                nombreLabel.textContent = `"${cartera}" - sin datos`;
+                if (chartEvolucion) { chartEvolucion.destroy();
+                    chartEvolucion = null; }
+                return;
+            }
+
+            data.sort((a, b) => a.periodo.localeCompare(b.periodo));
+            const labels = data.map(r => formatoPeriodo(r.periodo));
+
+            const valoresMaxima = data.map(r => r.ie_maxima);
+            const valoresPromedio = data.map(r => r.ie_promedio);
+            const valoresPropia = data.map(r => r.ie_propia);
+
+            nombreLabel.textContent = cartera;
+
+            if (chartEvolucion) { chartEvolucion.destroy();
+                chartEvolucion = null; }
+
+            const ctx = canvas.getContext('2d');
+
+            // Crear degradado para IE Propia
+            const gradientPropia = createGradient(ctx, COLORES_EVOLUCION.propia, 150);
+
+            chartEvolucion = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'IE Máxima',
+                        data: valoresMaxima,
+                        borderColor: COLORES_EVOLUCION.maxima,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2.5,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: COLORES_EVOLUCION.maxima,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: false,
+                        tension: 0.3,
+                    }, {
+                        label: 'IE Promedio',
+                        data: valoresPromedio,
+                        borderColor: COLORES_EVOLUCION.promedio,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2.5,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: COLORES_EVOLUCION.promedio,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: false,
+                        tension: 0.3,
+                    }, {
+                        label: 'IE Propia',
+                        data: valoresPropia,
+                        borderColor: COLORES_EVOLUCION.propia,
+                        backgroundColor: gradientPropia,
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: COLORES_EVOLUCION.propia,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: true,
+                        tension: 0.3,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                        axis: 'x'
+                    },
+
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255,255,255,0.92)',
+                            titleColor: '#1a2a6c',
+                            titleFont: {
+                                weight: '700',
+                                size: 12,
+                            },
+                            bodyColor: '#1C2640',
+                            bodyFont: {
+                                size: 11,
+                            },
+                            borderColor: 'transparent',
+                            borderWidth: 0,
+                            cornerRadius: 12,
+                            padding: 14,
+                            displayColors: true,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+                                    return label + ': ' + value.toFixed(2);
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(50,70,100,0.035)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { size: 9, weight: '500' },
+                                color: '#8A94A6',
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: function(context) {
+                                    try {
+                                        const chartObj = chartEvolucion || chart;
+                                        const activeElements = chartObj?.tooltip?._active || [];
+                                        if (activeElements.length > 0) {
+                                            const activeIndex = activeElements[0].index;
+                                            if (context.index === activeIndex) {
+                                                return { weight: '700', size: 11 };
+                                            }
+                                        }
+                                    } catch (e) { /* ignorar */ }
+                                    return { weight: '500', size: 9 };
+                                },
+                                color: function(context) {
+                                    try {
+                                        const chartObj = chartEvolucion || chart;
+                                        const activeElements = chartObj?.tooltip?._active || [];
+                                        if (activeElements.length > 0) {
+                                            const activeIndex = activeElements[0].index;
+                                            if (context.index === activeIndex) {
+                                                return '#1E5EFF';
+                                            }
+                                        }
+                                    } catch (e) { /* ignorar */ }
+                                    return '#8A94A6';
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        }
+                    },
+
+                    animation: {
+                        duration: 700,
+                        easing: 'easeOutQuart'
+                    },
+
+                    animations: {
+                        radius: {
+                            duration: 250
+                        }
+                    }
+                },
+
+                plugins: [crosshairPlugin]
+            });
+        }
+
+        // ================================================================
+        // OBTENER DATOS PARA TABLA
+        // ================================================================
+        function obtenerDatosTabla(tipo, sortCol, sortDir, busqueda) {
+            const col = sortCol || estado.sortCol;
+            const dir = sortDir || estado.sortDir;
+            const search = busqueda !== undefined ? busqueda : estado.busqueda;
+            const indicador = estado.indicador;
+            const pais = estado.pais;
+
+            let data = [];
+            let label = '';
+            let tipoDato = tipo || estado.tablaTipo;
+            let periodoSeleccionado = estado.tablaPeriodoSeleccionado;
+
+            if (tipo && tipo.startsWith('mensual_')) {
+                periodoSeleccionado = tipo.replace('mensual_', '');
+                tipoDato = 'mensual';
+            }
+
+            if (tipoDato === 'mensual' && periodoSeleccionado) {
+                data = datos.filter(r => r.periodo === periodoSeleccionado);
+                if (pais !== 'todos') {
+                    data = data.filter(r => r.pais === pais);
+                }
+                label = formatoPeriodo(periodoSeleccionado);
+            } else if (tipoDato === 'promedio' || !periodoSeleccionado) {
+                const ultimos = obtenerUltimosPeriodos(periodos, 3);
+                let rawData = datos;
+                if (pais !== 'todos') {
+                    rawData = rawData.filter(r => r.pais === pais);
+                }
+                const carteras = [...new Set(rawData.map(r => r.cartera))];
+                data = carteras.map(cartera => {
+                    const rows = rawData.filter(r => r.cartera === cartera && ultimos.includes(r.periodo));
+                    if (rows.length === 0) return null;
+                    const avgMax = rows.reduce((acc, r) => acc + (r.efici_maxima || 0), 0) / rows.length;
+                    const avgProm = rows.reduce((acc, r) => acc + (r.efici_prome || 0), 0) / rows.length;
+                    const avgProp = rows.reduce((acc, r) => acc + (r.efici_propia || 0), 0) / rows.length;
+                    const avgHon = rows.reduce((acc, r) => acc + (r.honorario_promedio || 0), 0) / rows.length;
+                    const ieMax = avgMax * avgHon * 100;
+                    const ieProm = avgProm * avgHon * 100;
+                    const ieProp = avgProp * avgHon * 100;
+                    return {
+                        cartera,
+                        efici_maxima: avgMax,
+                        efici_prome: avgProm,
+                        efici_propia: avgProp,
+                        honorario_promedio: avgHon,
+                        ie_maxima: ieMax,
+                        ie_promedio: ieProm,
+                        ie_propia: ieProp,
+                        pais: rows[0]?.pais || '',
+                        periodo: ultimos.join(', '),
+                    };
+                }).filter(r => r !== null);
+                label = 'Promedio últimos 3 meses';
+            }
+
+            const searchLower = search.toLowerCase().trim();
+            if (searchLower) {
+                data = data.filter(r => r.cartera.toLowerCase().includes(searchLower));
+            }
+
+            const dirMultiplier = dir === 'asc' ? 1 : -1;
+            data.sort((a, b) => {
+                let va = a[col] || 0;
+                let vb = b[col] || 0;
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+                if (va < vb) return -1 * dirMultiplier;
+                if (va > vb) return 1 * dirMultiplier;
+                return 0;
+            });
+
+            return { data, label };
+        }
+
+        // ================================================================
+        // ACTUALIZAR TABLA
+        // ================================================================
+        function actualizarTabla() {
+            const body = document.getElementById('tabla-body');
+            const info = document.getElementById('tabla-info');
+            const pagInfo = document.getElementById('pag-info');
+
+            const selector = document.getElementById('tabla-tipo-dato');
+            const tipoValor = selector ? selector.value : 'promedio';
+
+            const { data, label } = obtenerDatosTabla(tipoValor);
+            const total = data.length;
+            const pageSize = estado.pageSize;
+            const totalPages = Math.ceil(total / pageSize) || 1;
+
+            if (estado.page > totalPages) estado.page = totalPages;
+            const start = (estado.page - 1) * pageSize;
+            const end = Math.min(start + pageSize, total);
+            const pageData = data.slice(start, end);
+
+            if (total === 0) {
+                body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No hay datos</td></tr>';
+                info.textContent = 'Mostrando 0 a 0 de 0 carteras';
+                pagInfo.textContent = '1 / 1';
+                document.getElementById('pag-prev').disabled = true;
+                document.getElementById('pag-next').disabled = true;
+                return;
+            }
+
+            const renderRows = (datos) => {
+                return datos.map(row => {
+                    const sel = estado.carteraSeleccionada === row.cartera ? 'seleccionada' : '';
+                    return `<tr class="${sel}" data-cartera="${row.cartera}">
+                                <td><strong>${row.cartera}</strong></td>
+                                <td>${fmtPct(row.honorario_promedio)}</td>
+                                <td>${fmtPct(row.efici_maxima)}</td>
+                                <td>${fmtPct(row.efici_prome)}</td>
+                                <td>${fmtPct(row.efici_propia)}</td>
+                                <td><span class="num">${fmtIE(row.ie_maxima)}</span></td>
+                                <td><span class="num">${fmtIE(row.ie_promedio)}</span></td>
+                                <td><span class="num destacado">${fmtIE(row.ie_propia)}</span></td>
+                            </tr>`;
+                }).join('');
+            };
+
+            body.innerHTML = renderRows(pageData);
+
+            body.querySelectorAll('tr[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    estado.carteraSeleccionada = this.dataset.cartera;
+                    aplicarFiltros();
+                });
+            });
+
+            info.textContent = `Mostrando ${start + 1} a ${end} de ${total} carteras (${label})`;
+            pagInfo.textContent = `${estado.page} / ${totalPages}`;
+
+            document.getElementById('pag-prev').disabled = estado.page <= 1;
+            document.getElementById('pag-next').disabled = estado.page >= totalPages;
+
+            document.querySelectorAll('#tabla-carteras thead th').forEach(th => {
+                th.classList.remove('active');
+                if (th.dataset.col === estado.sortCol) {
+                    th.classList.add('active');
+                }
+            });
+        }
+
+        // ================================================================
+        // ACTUALIZAR MODALES
+        // ================================================================
+        function actualizarModales() {
+            actualizarModalRanking();
+            actualizarModalRankingPromedio();
+            actualizarModalEvolucionPremium();
+            actualizarModalTabla();
+        }
+
+        // ---- MODAL RANKING ----
+        function actualizarModalRanking() {
+            const indicador = estado.indicador;
+            const periodo = estado.periodo;
+            const lista = document.getElementById('modal-ranking-lista');
+
+            if (!periodo) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>';
+                return;
+            }
+
+            const data = datosFiltrados.filter(r => r.periodo === periodo);
+            if (data.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Sin datos para este período</div>';
+                return;
+            }
+
+            const sorted = [...data].sort((a, b) => getIE(b, indicador) - getIE(a, indicador));
+            const maxVal = sorted.length > 0 ? getIE(sorted[0], indicador) : 1;
+
+            document.getElementById('modal-ranking-titulo').textContent = INDICADOR_LABEL[indicador];
+            document.getElementById('modal-eje-max').textContent = fmtIE(maxVal);
+
+            const html = sorted.map((row, i) => {
+                const pos = i + 1;
+                const val = getIE(row, indicador);
+                const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
+                const cls = pos === 1 ? 'top1' : '';
+                return `<div class="ranking-item ${cls}" data-cartera="${row.cartera}">
+                            <div class="pos">#${pos}</div>
+                            <div class="name">${row.cartera}</div>
+                            <div class="barra-wrapper">
+                                <div class="barra" style="width:${Math.max(pct, 4)}%;"></div>
+                            </div>
+                            <div class="valor">${fmtIE(val)}</div>
+                        </div>`;
+            }).join('');
+
+            lista.innerHTML = html;
+
+            lista.querySelectorAll('.ranking-item[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    estado.carteraSeleccionada = this.dataset.cartera;
+                    aplicarFiltros();
+                    cerrarModal('modal-ranking');
+                });
+            });
+
+            document.getElementById('modal-ranking-info').textContent =
+                `Ranking ${INDICADOR_LABEL[indicador]} - ${formatoPeriodo(periodo)} (${data.length} carteras)`;
+        }
+
+        // ---- MODAL RANKING PROMEDIO ----
+        function actualizarModalRankingPromedio() {
+            const indicador = estado.indicador;
+            const lista = document.getElementById('modal-ranking-promedio-lista');
+
+            if (periodos.length < 1) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">No hay períodos disponibles</div>';
+                return;
+            }
+
+            const ultimos = obtenerUltimosPeriodos(periodos, 3);
+            if (ultimos.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">No hay datos suficientes</div>';
+                return;
+            }
+
+            let data = datos;
+            if (estado.pais !== 'todos') {
+                data = data.filter(r => r.pais === estado.pais);
+            }
+
+            const carteras = [...new Set(data.map(r => r.cartera))];
+            const promedios = carteras.map(cartera => {
+                const rows = data.filter(r => r.cartera === cartera && ultimos.includes(r.periodo));
+                if (rows.length === 0) return null;
+                const sum = rows.reduce((acc, r) => acc + getIE(r, indicador), 0);
+                return { cartera, promedio: sum / rows.length, count: rows.length };
+            }).filter(r => r !== null && r.count > 0);
+
+            if (promedios.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Sin datos para el promedio</div>';
+                return;
+            }
+
+            const sorted = promedios.sort((a, b) => b.promedio - a.promedio);
+            const maxVal = sorted.length > 0 ? sorted[0].promedio : 1;
+            const top = sorted.slice(0, 20);
+
+            document.getElementById('modal-ranking-promedio-titulo').textContent = INDICADOR_LABEL[indicador];
+            document.getElementById('modal-promedio-eje-max').textContent = fmtIE(maxVal);
+
+            const html = top.map((row, i) => {
+                const pos = i + 1;
+                const pct = maxVal > 0 ? (row.promedio / maxVal) * 100 : 0;
+                const cls = pos === 1 ? 'top1' : '';
+                return `<div class="ranking-item ${cls}" data-cartera="${row.cartera}">
+                            <div class="pos">#${pos}</div>
+                            <div class="name">${row.cartera}</div>
+                            <div class="barra-wrapper">
+                                <div class="barra" style="width:${Math.max(pct, 4)}%;"></div>
+                            </div>
+                            <div class="valor">${fmtIE(row.promedio)}</div>
+                        </div>`;
+            }).join('');
+
+            lista.innerHTML = html;
+
+            lista.querySelectorAll('.ranking-item[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    estado.carteraSeleccionada = this.dataset.cartera;
+                    aplicarFiltros();
+                    cerrarModal('modal-ranking-promedio-modal');
+                });
+            });
+
+            document.getElementById('modal-ranking-promedio-info').textContent =
+                `Ranking promedio ${INDICADOR_LABEL[indicador]} - últimos 3 meses (${top.length} carteras)`;
+        }
+
+        // ---- MODAL EVOLUCION PREMIUM ----
+        function actualizarModalEvolucionPremium() {
+            const canvas = document.getElementById('modal-evolucion-chart');
+            const nombreLabel = document.getElementById('modal-evolucion-cartera');
+
+            if (!estado.carteraSeleccionada) {
+                nombreLabel.textContent = 'seleccione una cartera';
+                if (chartModalEvolucion) { chartModalEvolucion.destroy();
+                    chartModalEvolucion = null; }
+                return;
+            }
+
+            const cartera = estado.carteraSeleccionada;
+
+            let data = datos.filter(r => r.cartera === cartera);
+            if (estado.pais !== 'todos') {
+                data = data.filter(r => r.pais === estado.pais);
+            }
+
+            if (data.length === 0) {
+                nombreLabel.textContent = `"${cartera}" - sin datos`;
+                if (chartModalEvolucion) { chartModalEvolucion.destroy();
+                    chartModalEvolucion = null; }
+                return;
+            }
+
+            data.sort((a, b) => a.periodo.localeCompare(b.periodo));
+            const labels = data.map(r => formatoPeriodo(r.periodo));
+            const valoresMaxima = data.map(r => r.ie_maxima);
+            const valoresPromedio = data.map(r => r.ie_promedio);
+            const valoresPropia = data.map(r => r.ie_propia);
+
+            nombreLabel.textContent = cartera;
+
+            if (chartModalEvolucion) { chartModalEvolucion.destroy();
+                chartModalEvolucion = null; }
+
+            const ctx = canvas.getContext('2d');
+
+            // Degradado para IE Propia en modal
+            const gradientPropia = createGradient(ctx, COLORES_EVOLUCION.propia, 280);
+
+            chartModalEvolucion = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'IE Máxima',
+                        data: valoresMaxima,
+                        borderColor: COLORES_EVOLUCION.maxima,
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: COLORES_EVOLUCION.maxima,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: false,
+                        tension: 0.3,
+                    }, {
+                        label: 'IE Promedio',
+                        data: valoresPromedio,
+                        borderColor: COLORES_EVOLUCION.promedio,
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: COLORES_EVOLUCION.promedio,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: false,
+                        tension: 0.3,
+                    }, {
+                        label: 'IE Propia',
+                        data: valoresPropia,
+                        borderColor: COLORES_EVOLUCION.propia,
+                        backgroundColor: gradientPropia,
+                        borderWidth: 3.5,
+                        pointRadius: 0,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: COLORES_EVOLUCION.propia,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: true,
+                        tension: 0.3,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                        axis: 'x'
+                    },
+
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255,255,255,0.92)',
+                            titleColor: '#1a2a6c',
+                            titleFont: {
+                                weight: '700',
+                                size: 13,
+                            },
+                            bodyColor: '#1C2640',
+                            bodyFont: {
+                                size: 12,
+                            },
+                            borderColor: 'transparent',
+                            borderWidth: 0,
+                            cornerRadius: 12,
+                            padding: 16,
+                            displayColors: true,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+                                    return label + ': ' + value.toFixed(2);
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(50,70,100,0.035)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { size: 10, weight: '500' },
+                                color: '#8A94A6',
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: function(context) {
+                                    try {
+                                        const chartObj = chartModalEvolucion || chart;
+                                        const activeElements = chartObj?.tooltip?._active || [];
+                                        if (activeElements.length > 0) {
+                                            const activeIndex = activeElements[0].index;
+                                            if (context.index === activeIndex) {
+                                                return { weight: '700', size: 12 };
+                                            }
+                                        }
+                                    } catch (e) { /* ignorar */ }
+                                    return { weight: '500', size: 10 };
+                                },
+                                color: function(context) {
+                                    try {
+                                        const chartObj = chartModalEvolucion || chart;
+                                        const activeElements = chartObj?.tooltip?._active || [];
+                                        if (activeElements.length > 0) {
+                                            const activeIndex = activeElements[0].index;
+                                            if (context.index === activeIndex) {
+                                                return '#1E5EFF';
+                                            }
+                                        }
+                                    } catch (e) { /* ignorar */ }
+                                    return '#8A94A6';
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        }
+                    },
+
+                    animation: {
+                        duration: 700,
+                        easing: 'easeOutQuart'
+                    },
+
+                    animations: {
+                        radius: {
+                            duration: 250
+                        }
+                    }
+                },
+
+                plugins: [crosshairPlugin]
+            });
+
+            document.getElementById('modal-evolucion-info').textContent =
+                `Evolución IE por Cartera - ${cartera}`;
+        }
+
+        // ---- MODAL TABLA ----
+        function actualizarModalTabla() {
+            const body = document.getElementById('modal-tabla-body-content');
+            const info = document.getElementById('modal-tabla-info');
+
+            const selector = document.getElementById('modal-tabla-tipo-dato');
+            const tipo = selector ? selector.value : 'promedio';
+            const busqueda = document.getElementById('modal-tabla-buscar').value;
+            const col = estado.sortCol;
+            const dir = estado.sortDir;
+
+            const { data, label } = obtenerDatosTabla(tipo, col, dir, busqueda);
+            const total = data.length;
+
+            if (total === 0) {
+                body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No hay datos</td></tr>';
+                info.textContent = 'Mostrando 0 a 0 de 0 carteras';
+                return;
+            }
+
+            const renderRows = (datos) => {
+                return datos.map(row => {
+                    const sel = estado.carteraSeleccionada === row.cartera ? 'seleccionada' : '';
+                    return `<tr class="${sel}" data-cartera="${row.cartera}">
+                                <td><strong>${row.cartera}</strong></td>
+                                <td>${fmtPct(row.honorario_promedio)}</td>
+                                <td>${fmtPct(row.efici_maxima)}</td>
+                                <td>${fmtPct(row.efici_prome)}</td>
+                                <td>${fmtPct(row.efici_propia)}</td>
+                                <td><span class="num">${fmtIE(row.ie_maxima)}</span></td>
+                                <td><span class="num">${fmtIE(row.ie_promedio)}</span></td>
+                                <td><span class="num destacado">${fmtIE(row.ie_propia)}</span></td>
+                            </tr>`;
+                }).join('');
+            };
+
+            body.innerHTML = renderRows(data);
+
+            body.querySelectorAll('tr[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    estado.carteraSeleccionada = this.dataset.cartera;
+                    aplicarFiltros();
+                    cerrarModal('modal-tabla');
+                });
+            });
+
+            info.textContent = `Mostrando ${total} carteras (${label})`;
+
+            document.querySelectorAll('#modal-tabla-body thead th').forEach(th => {
+                th.classList.remove('active');
+                if (th.dataset.col === estado.sortCol) {
+                    th.classList.add('active');
+                }
+            });
+        }
+
+        // ================================================================
+        // MODAL CONTROLS
+        // ================================================================
+        function abrirModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                if (id === 'modal-ranking') actualizarModalRanking();
+                else if (id === 'modal-ranking-promedio-modal') actualizarModalRankingPromedio();
+                else if (id === 'modal-evolucion') actualizarModalEvolucionPremium();
+                else if (id === 'modal-tabla') actualizarModalTabla();
+            }
+        }
+
+        function cerrarModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Eventos para botones de expandir
+        document.getElementById('expand-ranking').addEventListener('click', function(e) {
+            e.stopPropagation();
+            abrirModal('modal-ranking');
+        });
+
+        document.getElementById('expand-ranking-promedio').addEventListener('click', function(e) {
+            e.stopPropagation();
+            abrirModal('modal-ranking-promedio-modal');
+        });
+
+        document.getElementById('expand-evolucion').addEventListener('click', function(e) {
+            e.stopPropagation();
+            abrirModal('modal-evolucion');
+        });
+
+        document.getElementById('btn-expand-tabla').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const selector = document.getElementById('tabla-tipo-dato');
+            const modalSelector = document.getElementById('modal-tabla-tipo-dato');
+            if (selector && modalSelector) {
+                modalSelector.value = selector.value;
+            }
+            document.getElementById('modal-tabla-buscar').value = document.getElementById('tabla-buscar').value;
+            abrirModal('modal-tabla');
+        });
+
+        // Cerrar modales
+        document.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', function() {
+                cerrarModal(this.dataset.modal);
+            });
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    cerrarModal(this.id);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    cerrarModal(modal.id);
+                });
+            }
+        });
+
+        // ================================================================
+        // EVENTOS DE SELECTORES DE TABLA
+        // ================================================================
+        document.getElementById('tabla-tipo-dato').addEventListener('change', function() {
+            const valor = this.value;
+            if (valor === 'promedio') {
+                estado.tablaTipo = 'promedio';
+                estado.tablaPeriodoSeleccionado = '';
+            } else if (valor.startsWith('mensual_')) {
+                estado.tablaTipo = 'mensual';
+                estado.tablaPeriodoSeleccionado = valor.replace('mensual_', '');
+            }
+            estado.page = 1;
+            const modalSelector = document.getElementById('modal-tabla-tipo-dato');
+            if (modalSelector) modalSelector.value = valor;
+            actualizarTabla();
+            actualizarModalTabla();
+        });
+
+        document.getElementById('modal-tabla-tipo-dato').addEventListener('change', function() {
+            const valor = this.value;
+            const mainSelector = document.getElementById('tabla-tipo-dato');
+            if (mainSelector) mainSelector.value = valor;
+            if (valor === 'promedio') {
+                estado.tablaTipo = 'promedio';
+                estado.tablaPeriodoSeleccionado = '';
+            } else if (valor.startsWith('mensual_')) {
+                estado.tablaTipo = 'mensual';
+                estado.tablaPeriodoSeleccionado = valor.replace('mensual_', '');
+            }
+            estado.page = 1;
+            actualizarModalTabla();
+            actualizarTabla();
+        });
+
+        document.getElementById('modal-tabla-buscar').addEventListener('input', function() {
+            document.getElementById('tabla-buscar').value = this.value;
+            estado.busqueda = this.value;
+            estado.page = 1;
+            actualizarModalTabla();
+            actualizarTabla();
+        });
+
+        document.getElementById('tabla-buscar').addEventListener('input', function() {
+            document.getElementById('modal-tabla-buscar').value = this.value;
+            estado.busqueda = this.value;
+            estado.page = 1;
+            actualizarTabla();
+            actualizarModalTabla();
+        });
+
+        // ================================================================
+        // ORDENAMIENTO DE TABLA
+        // ================================================================
+        function handleSort(col) {
+            if (estado.sortCol === col) {
+                estado.sortDir = estado.sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                estado.sortCol = col;
+                estado.sortDir = 'asc';
+            }
+            estado.page = 1;
+            actualizarTabla();
+            actualizarModalTabla();
+        }
+
+        document.querySelectorAll('#tabla-carteras thead th').forEach(th => {
+            th.addEventListener('click', function() {
+                const col = this.dataset.col;
+                if (col) handleSort(col);
+            });
+        });
+
+        document.querySelectorAll('#modal-tabla-body thead th').forEach(th => {
+            th.addEventListener('click', function() {
+                const col = this.dataset.col;
+                if (col) handleSort(col);
+            });
+        });
+
+        // ================================================================
+        // EVENTOS PRINCIPALES
+        // ================================================================
+
+        function triggerFileInput() {
+            document.getElementById('file-input-excel').click();
+        }
+        document.getElementById('btn-cargar-excel').addEventListener('click', triggerFileInput);
+        document.getElementById('btn-cargar-inicial').addEventListener('click', triggerFileInput);
+
+        document.getElementById('file-input-excel').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(loadEvent) {
+                try {
+                    const data = new Uint8Array(loadEvent.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(firstSheet);
+                    procesarDatosExcel(json);
+                } catch (err) {
+                    alert('Error al leer el archivo: ' + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            this.value = '';
+        });
+
+        document.getElementById('filtro-periodo').addEventListener('change', function() {
+            estado.periodo = this.value;
+            estado.page = 1;
+            aplicarFiltros();
+        });
+
+        document.getElementById('filtro-indicador').addEventListener('change', function() {
+            estado.indicador = this.value;
+            estado.page = 1;
+            aplicarFiltros();
+        });
+
+        document.getElementById('btn-limpiar').addEventListener('click', function() {
+            document.getElementById('filtro-periodo').value = periodos.length > 0 ? periodos[periodos.length - 1] : '';
+            document.getElementById('filtro-indicador').value = 'ie_propia';
+            document.getElementById('tabla-buscar').value = '';
+            document.getElementById('modal-tabla-buscar').value = '';
+
+            if (periodos.length > 0) {
+                const selector = document.getElementById('tabla-tipo-dato');
+                if (selector) {
+                    const ultimoPeriodo = periodos[periodos.length - 1];
+                    selector.value = 'mensual_' + ultimoPeriodo;
+                    estado.tablaTipo = 'mensual';
+                    estado.tablaPeriodoSeleccionado = ultimoPeriodo;
+                }
+                const modalSelector = document.getElementById('modal-tabla-tipo-dato');
+                if (modalSelector) {
+                    modalSelector.value = 'mensual_' + periodos[periodos.length - 1];
+                }
+            }
+
+            options.forEach(opt => opt.classList.remove('active'));
+            const defaultOption = optionsContainer.querySelector('.option[data-value="todos"]');
+            if (defaultOption) {
+                defaultOption.classList.add('active');
+                selectedText.innerHTML = '<span class="globe-icon">🌍</span><span>Todos</span>';
+            }
+
+            estado.pais = 'todos';
+            estado.periodo = periodos.length > 0 ? periodos[periodos.length - 1] : '';
+            estado.indicador = 'ie_propia';
+            estado.busqueda = '';
+            estado.page = 1;
+            estado.carteraSeleccionada = null;
+            estado.sortCol = 'cartera';
+            estado.sortDir = 'asc';
+            aplicarFiltros();
+        });
+
+        document.getElementById('pag-prev').addEventListener('click', function() {
+            if (estado.page > 1) { estado.page--;
+                actualizarTabla(); }
+        });
+        document.getElementById('pag-next').addEventListener('click', function() {
+            const selector = document.getElementById('tabla-tipo-dato');
+            const tipo = selector ? selector.value : 'promedio';
+            const { data } = obtenerDatosTabla(tipo);
+            const totalPages = Math.ceil(data.length / estado.pageSize);
+            if (estado.page < totalPages) { estado.page++;
+                actualizarTabla(); }
+        });
+
+        // Sidebar - Países
+        document.querySelectorAll('#sidebar nav ul li[data-pais]').forEach(el => {
+            el.addEventListener('click', function() {
+                const pais = this.dataset.pais;
+                estado.pais = pais;
+                estado.page = 1;
+                aplicarFiltros();
+
+                options.forEach(opt => opt.classList.remove('active'));
+                const targetOption = optionsContainer.querySelector(`.option[data-value="${pais}"]`);
+                if (targetOption) {
+                    targetOption.classList.add('active');
+                    const iconClone = targetOption.querySelector('.flag-icon')?.cloneNode(true) ||
+                        targetOption.querySelector('.globe-icon')?.cloneNode(true);
+                    const labelText = targetOption.querySelector('span:not(.check):not(.globe-icon)')?.textContent ||
+                        targetOption.textContent.trim();
+                    selectedText.innerHTML = '';
+                    if (iconClone) selectedText.appendChild(iconClone);
+                    const labelSpan = document.createElement('span');
+                    labelSpan.textContent = labelText || 'Todos';
+                    selectedText.appendChild(labelSpan);
+                }
+
+                document.querySelectorAll('#sidebar nav ul li[data-pais]').forEach(l => l.classList.remove(
+                    'active-country'));
+                this.classList.add('active-country');
+                document.querySelectorAll('#sidebar nav ul li[data-view]').forEach(l => l.classList.remove(
+                    'active'));
+            });
+        });
+
+        // Sidebar - Views
+        document.querySelectorAll('#sidebar nav ul li[data-view]').forEach(el => {
+            el.addEventListener('click', function() {
+                const view = this.dataset.view;
+                document.querySelectorAll('#sidebar nav ul li[data-view]').forEach(l => l.classList.remove(
+                    'active'));
+                this.classList.add('active');
+                document.querySelectorAll('#sidebar nav ul li[data-pais]').forEach(l => l.classList.remove(
+                    'active-country'));
+
+                if (view === 'ranking') {
+                    abrirModal('modal-ranking');
+                } else if (view === 'evolucion') {
+                    abrirModal('modal-evolucion');
+                } else if (view === 'comparativo') {
+                    abrirModal('modal-ranking-promedio-modal');
+                } else if (view === 'detalle') {
+                    const selector = document.getElementById('tabla-tipo-dato');
+                    const modalSelector = document.getElementById('modal-tabla-tipo-dato');
+                    if (selector && modalSelector) {
+                        modalSelector.value = selector.value;
+                    }
+                    document.getElementById('modal-tabla-buscar').value = document.getElementById('tabla-buscar')
+                        .value;
+                    abrirModal('modal-tabla');
+                }
+            });
+        });
+
+        document.getElementById('btn-refresh').addEventListener('click', function() { aplicarFiltros(); });
+
+        // ================================================================
+        // EXPORTAR
+        // ================================================================
+        document.getElementById('export-excel').addEventListener('click', function() {
+            const selector = document.getElementById('tabla-tipo-dato');
+            const tipo = selector ? selector.value : 'promedio';
+            const { data } = obtenerDatosTabla(tipo);
+            if (data.length === 0) { alert('No hay datos para exportar.'); return; }
+            const exportData = data.map(r => ({
+                CARTERA: r.cartera,
+                'Honorario Promedio': fmtPct(r.honorario_promedio),
+                'Efici Maxima': fmtPct(r.efici_maxima),
+                'Efici Prome': fmtPct(r.efici_prome),
+                'Efici Propia': fmtPct(r.efici_propia),
+                'IE Maxima': fmtIE(r.ie_maxima),
+                'IE Promedio': fmtIE(r.ie_promedio),
+                'IE Propia': fmtIE(r.ie_propia),
+            }));
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Datos');
+            XLSX.writeFile(wb, `Indices_Estrategicos_${new Date().toISOString().slice(0,10)}.xlsx`);
+        });
+
+        document.getElementById('export-pdf').addEventListener('click', function() {
+            const selector = document.getElementById('tabla-tipo-dato');
+            const tipo = selector ? selector.value : 'promedio';
+            const { data } = obtenerDatosTabla(tipo);
+            if (data.length === 0) { alert('No hay datos para exportar.'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape', 'mm', 'a4');
+            const fecha = new Date().toLocaleString('es-ES');
+            doc.setFontSize(16);
+            doc.text('Índices Estratégicos - Mornese Analytics', 20, 20);
+            doc.setFontSize(10);
+            doc.text(`Exportado: ${fecha}`, 20, 28);
+            doc.text(`País: ${estado.pais === 'todos' ? 'Todos' : estado.pais} | Período: ${estado.periodo || 'Todos'}`, 20,
+                34);
+            const cols = ['Cartera', 'Hon.', 'Ef.Máx', 'Ef.Prom', 'Ef.Prop', 'IE Máx', 'IE Prom', 'IE Prop'];
+            const rows = data.map(r => [
+                r.cartera,
+                fmtPct(r.honorario_promedio),
+                fmtPct(r.efici_maxima),
+                fmtPct(r.efici_prome),
+                fmtPct(r.efici_propia),
+                fmtIE(r.ie_maxima),
+                fmtIE(r.ie_promedio),
+                fmtIE(r.ie_propia),
+            ]);
+            doc.autoTable({
+                head: [cols],
+                body: rows,
+                startY: 40,
+                styles: { fontSize: 7 },
+                headStyles: { fillColor: [26, 42, 108] },
+                margin: { left: 10, right: 10 },
+            });
+            doc.save(`Indices_Estrategicos_${new Date().toISOString().slice(0,10)}.pdf`);
+        });
+
+        document.getElementById('btn-export-tabla-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('btn-export-tabla-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+
+        // Exportar desde modales
+        document.getElementById('modal-ranking-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-ranking-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+        document.getElementById('modal-ranking-promedio-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-ranking-promedio-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+        document.getElementById('modal-evolucion-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-evolucion-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+        document.getElementById('modal-tabla-excel-btn').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-tabla-pdf-btn').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+        document.getElementById('modal-tabla-export-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-tabla-export-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+
+        console.log('📊 Índices Estratégicos - Mornese Analytics');
+        console.log('📂 Carga tu archivo Excel para comenzar.');
+        console.log('✅ Evolución Premium: área azul degradada solo para IE Propia');
+        console.log('✅ Tooltip tipo tarjeta flotante con blur');
+        console.log('✅ Línea vertical azul tenue con crosshair');
+        console.log('✅ Halo blanco en punto activo');
+        console.log('✅ Leyenda con líneas en lugar de puntos');
+        console.log('✅ Badge de cartera tipo píldora');
+        console.log('✅ Animación inicial de 700ms');
+        console.log('✅ Fondo sutil degradado en el área del gráfico');
+    </script>
+
+</body>
+</html>
