@@ -19,7 +19,7 @@
 
     <style>
         /* ============================================================
-           ESTILOS COMPLETOS - VERSIÓN FINAL CON GRÁFICA PREMIUM
+           ESTILOS COMPLETOS - VERSIÓN FINAL CON CARGA AUTOMÁTICA
            ============================================================ */
         :root {
             --color-primary: #1a2a6c;
@@ -302,33 +302,6 @@
         .btn-refresh:hover {
             transform: rotate(60deg);
             color: var(--color-primary);
-        }
-
-        .cargar-excel-btn {
-            background: var(--color-accent);
-            color: var(--color-primary);
-            border: none;
-            padding: 5px 14px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 11px;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .cargar-excel-btn:hover {
-            background: #e8b83a;
-        }
-
-        .cargar-excel-btn i {
-            font-size: 13px;
-        }
-
-        #file-input-excel {
-            display: none;
         }
 
         /* ============================================================
@@ -813,7 +786,6 @@
             color: var(--color-blue);
         }
 
-        /* Badge tipo píldora para evolución */
         .badge-pill {
             background: #EEF4FF;
             color: #2D5BE3;
@@ -854,7 +826,6 @@
             font-size: 12px;
         }
 
-        /* Icono SVG en header de evolución */
         .icon-svg-evolucion {
             width: 18px;
             height: 18px;
@@ -1052,7 +1023,6 @@
             grid-column: 1;
         }
 
-        /* Contenedor con fondo sutil */
         .evolucion-container {
             position: relative;
             border-radius: 10px;
@@ -1065,7 +1035,6 @@
             max-width: 100%;
         }
 
-        /* Leyenda con líneas */
         .evolucion-legend {
             display: flex;
             justify-content: center;
@@ -1465,7 +1434,6 @@
             padding-left: 48px;
         }
 
-        /* Evolución en modal */
         .modal-body .evolucion-container {
             position: relative;
             border-radius: 10px;
@@ -1579,33 +1547,69 @@
         }
 
         /* ============================================================
-           ESTADO INICIAL
+           ESTADO INICIAL Y CARGA
            ============================================================ */
-        .sin-datos {
+        .estado-carga {
             text-align: center;
-            padding: 50px 20px;
+            padding: 60px 20px;
             color: var(--color-text-light);
         }
 
-        .sin-datos .icono-grande {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 12px;
+        .estado-carga .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--color-border);
+            border-top-color: var(--color-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
         }
 
-        .sin-datos h2 {
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .estado-carga h2 {
             font-size: 20px;
             color: var(--color-primary);
             margin-bottom: 6px;
         }
 
-        .sin-datos p {
+        .estado-carga p {
+            font-size: 13px;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .estado-error {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--color-text-light);
+        }
+
+        .estado-error .icono-error {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+            color: var(--color-red);
+        }
+
+        .estado-error h2 {
+            font-size: 20px;
+            color: var(--color-primary);
+            margin-bottom: 6px;
+        }
+
+        .estado-error p {
             font-size: 13px;
             max-width: 450px;
             margin: 0 auto 6px auto;
         }
 
-        .sin-datos .btn-cargar-destacado {
+        .estado-error .btn-reintentar {
             background: var(--color-accent);
             color: var(--color-primary);
             border: none;
@@ -1618,7 +1622,7 @@
             transition: background 0.2s;
         }
 
-        .sin-datos .btn-cargar-destacado:hover {
+        .estado-error .btn-reintentar:hover {
             background: #e8b83a;
         }
 
@@ -1898,13 +1902,23 @@
                 padding-left: 20px;
                 font-size: 7px;
             }
-            .sin-datos {
-                padding: 20px 10px;
+            .estado-carga {
+                padding: 30px 10px;
             }
-            .sin-datos .icono-grande {
+            .estado-carga .spinner {
+                width: 30px;
+                height: 30px;
+            }
+            .estado-carga h2 {
+                font-size: 16px;
+            }
+            .estado-error {
+                padding: 30px 10px;
+            }
+            .estado-error .icono-error {
                 font-size: 32px;
             }
-            .sin-datos h2 {
+            .estado-error h2 {
                 font-size: 16px;
             }
             .card-kpi {
@@ -2088,26 +2102,26 @@
                 <div class="subtitle">Monitoreo de Carteras</div>
             </div>
             <div class="header-right">
-                <button class="cargar-excel-btn" id="btn-cargar-excel">
-                    <i class="fas fa-folder-open"></i> Cargar Excel
-                </button>
-                <input type="file" id="file-input-excel" accept=".xlsx,.xls" />
-                <span id="last-update-label">Actualización: <strong id="update-date">Sin datos</strong></span>
+                <span id="last-update-label">Actualización: <strong id="update-date">Cargando datos...</strong></span>
                 <button class="btn-refresh" id="btn-refresh" title="Refrescar">
                     <i class="fas fa-sync-alt"></i>
                 </button>
             </div>
         </header>
 
-        <!-- ESTADO INICIAL -->
-        <div id="estado-inicial" class="sin-datos">
-            <span class="icono-grande">📊</span>
-            <h2>Bienvenido a Índices Estratégicos</h2>
-            <p>Carga tu archivo Excel para comenzar a visualizar los datos.</p>
-            <p style="font-size:11px; color:var(--color-text-light);">
-                Columnas requeridas: PAIS, PERIODO, CARTERA, Efici Maxima, Efici Prome, Efici Propia, Honorario Promedio
-            </p>
-            <button class="btn-cargar-destacado" id="btn-cargar-inicial">📂 Seleccionar archivo Excel</button>
+        <!-- ESTADO DE CARGA -->
+        <div id="estado-carga" class="estado-carga">
+            <div class="spinner"></div>
+            <h2>Cargando datos...</h2>
+            <p>Obteniendo la información desde el servidor. Por favor, espera un momento.</p>
+        </div>
+
+        <!-- ESTADO DE ERROR -->
+        <div id="estado-error" class="estado-error" style="display:none;">
+            <span class="icono-error">⚠️</span>
+            <h2>Error al cargar los datos</h2>
+            <p id="error-mensaje">No se pudo obtener el archivo de datos. Verifica tu conexión o intenta más tarde.</p>
+            <button class="btn-reintentar" id="btn-reintentar">🔄 Reintentar</button>
         </div>
 
         <!-- DASHBOARD -->
@@ -2284,7 +2298,7 @@
                     </div>
                     <div class="ranking-container" id="ranking-mensual-container">
                         <div id="ranking-mensual-lista">
-                            <div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>
+                            <div class="text-muted text-center" style="padding:20px 0;">Cargando datos...</div>
                         </div>
                     </div>
                     <div class="eje-valores">
@@ -2306,7 +2320,7 @@
                     </div>
                     <div class="ranking-container purple-scroll" id="ranking-promedio-container">
                         <div id="ranking-promedio-lista">
-                            <div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>
+                            <div class="text-muted text-center" style="padding:20px 0;">Cargando datos...</div>
                         </div>
                     </div>
                     <div class="eje-valores">
@@ -2319,7 +2333,6 @@
                 <div class="panel" id="evolucion-panel">
                     <div class="panel-header">
                         <div class="panel-header-left">
-                            <!-- Icono SVG en lugar de emoji -->
                             <span class="icon-svg-evolucion">
                                 <svg viewBox="0 0 24 24">
                                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -2335,7 +2348,6 @@
                     <div class="evolucion-container">
                         <canvas id="evolucion-chart" height="130"></canvas>
                     </div>
-                    <!-- Leyenda con líneas -->
                     <div class="evolucion-legend">
                         <span class="legend-item">
                             <span class="line-sample maxima"></span> IE Máxima
@@ -2384,12 +2396,12 @@
                                 </tr>
                             </thead>
                             <tbody id="tabla-body">
-                                <tr><td colspan="8" class="text-center text-muted">Sin datos</td></tr>
+                                <tr><td colspan="8" class="text-center text-muted">Cargando datos...</td></tr>
                             </tbody>
                         </table>
                     </div>
                     <div class="table-footer">
-                        <span id="tabla-info">Mostrando 0 a 0 de 0</span>
+                        <span id="tabla-info">Cargando...</span>
                         <div class="paginacion" id="tabla-paginacion">
                             <button id="pag-prev" disabled>◀</button>
                             <span id="pag-info">1 / 1</span>
@@ -2584,6 +2596,12 @@
     ============================================================ -->
     <script>
         // ================================================================
+        // CONFIGURACIÓN - RUTA DEL EXCEL
+        // ================================================================
+        // ⚠️ CAMBIA ESTA URL POR LA DE TU EXCEL EN GITHUB ⚠️
+        const RUTA_EXCEL = 'https://raw.githubusercontent.com/JMartinezMornese/indices-estrategicos/main/data/Base%20Indices%20Estrategicos.xlsx';
+
+        // ================================================================
         // ESTADO GLOBAL
         // ================================================================
         let datos = [];
@@ -2592,6 +2610,7 @@
         let chartEvolucion = null;
         let chartModalEvolucion = null;
         let datosCargados = false;
+        let cargando = false;
 
         const estado = {
             pais: 'todos',
@@ -2613,7 +2632,6 @@
             ie_propia: 'IE Propia'
         };
 
-        // Colores: ROJO, VERDE, AZUL
         const COLORES_EVOLUCION = {
             maxima: '#FF3131',
             promedio: '#2DBE60',
@@ -2681,7 +2699,7 @@
         }
 
         // ================================================================
-        // PLUGIN PARA LÍNEA VERTICAL (CROSSHAIR) - AZUL TENUE
+        // PLUGIN PARA LÍNEA VERTICAL (CROSSHAIR)
         // ================================================================
         const crosshairPlugin = {
             id: 'crosshair',
@@ -2775,45 +2793,85 @@
         });
 
         // ================================================================
-        // PROCESAR DATOS EXCEL
+        // CARGA DE DATOS DESDE EXCEL (AUTOMÁTICA)
         // ================================================================
-        function procesarDatosExcel(json) {
-            const raw = json
-                .filter(row => row.PAIS && row.PERIODO && row.CARTERA)
-                .map(row => ({
-                    pais: String(row.PAIS).trim(),
-                    periodo: String(row.PERIODO).trim(),
-                    cartera: String(row.CARTERA).trim(),
-                    efici_maxima: parseFloat(row['Efici Maxima']) || 0,
-                    efici_prome: parseFloat(row['Efici Prome']) || 0,
-                    efici_propia: parseFloat(row['Efici Propia']) || 0,
-                    honorario_promedio: parseFloat(row['Honorario Promedio']) || 0,
-                }));
+        function cargarDatos() {
+            if (cargando) return;
+            cargando = true;
 
-            if (raw.length === 0) {
-                alert('No se encontraron datos en el archivo. Verifica las columnas.');
-                return false;
-            }
+            // Mostrar estado de carga
+            document.getElementById('estado-carga').style.display = 'block';
+            document.getElementById('estado-error').style.display = 'none';
+            document.getElementById('dashboard-contenido').style.display = 'none';
+            document.getElementById('update-date').textContent = 'Cargando datos...';
 
-            raw.forEach(row => {
-                row.ie_maxima = calcularIE(row, 'ie_maxima');
-                row.ie_promedio = calcularIE(row, 'ie_promedio');
-                row.ie_propia = calcularIE(row, 'ie_propia');
-            });
+            // Intentar descargar el Excel desde la URL pública de GitHub
+            fetch(RUTA_EXCEL)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+                    }
+                    return response.arrayBuffer();
+                })
+                .then(buffer => {
+                    try {
+                        const workbook = XLSX.read(buffer, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const json = XLSX.utils.sheet_to_json(firstSheet);
 
-            datos = raw;
-            periodos = [...new Set(datos.map(d => d.periodo))].sort();
+                        // Procesar los datos
+                        const raw = json
+                            .filter(row => row.PAIS && row.PERIODO && row.CARTERA)
+                            .map(row => ({
+                                pais: String(row.PAIS).trim(),
+                                periodo: String(row.PERIODO).trim(),
+                                cartera: String(row.CARTERA).trim(),
+                                efici_maxima: parseFloat(row['Efici Maxima']) || 0,
+                                efici_prome: parseFloat(row['Efici Prome']) || 0,
+                                efici_propia: parseFloat(row['Efici Propia']) || 0,
+                                honorario_promedio: parseFloat(row['Honorario Promedio']) || 0,
+                            }));
 
-            document.getElementById('update-date').textContent = new Date().toLocaleString('es-ES');
+                        if (raw.length === 0) {
+                            throw new Error('No se encontraron datos en el archivo. Verifica las columnas.');
+                        }
 
-            document.getElementById('estado-inicial').style.display = 'none';
-            document.getElementById('dashboard-contenido').style.display = 'block';
+                        // Calcular IEs
+                        raw.forEach(row => {
+                            row.ie_maxima = calcularIE(row, 'ie_maxima');
+                            row.ie_promedio = calcularIE(row, 'ie_promedio');
+                            row.ie_propia = calcularIE(row, 'ie_propia');
+                        });
 
-            datosCargados = true;
-            inicializarFiltros();
-            inicializarSelectoresTabla();
-            aplicarFiltros();
-            return true;
+                        datos = raw;
+                        periodos = [...new Set(datos.map(d => d.periodo))].sort();
+
+                        document.getElementById('update-date').textContent = new Date().toLocaleString('es-ES');
+
+                        // Ocultar carga, mostrar dashboard
+                        document.getElementById('estado-carga').style.display = 'none';
+                        document.getElementById('dashboard-contenido').style.display = 'block';
+
+                        datosCargados = true;
+                        cargando = false;
+
+                        inicializarFiltros();
+                        inicializarSelectoresTabla();
+                        aplicarFiltros();
+
+                    } catch (err) {
+                        throw new Error('Error al procesar el archivo: ' + err.message);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error al cargar datos:', err);
+                    cargando = false;
+                    document.getElementById('estado-carga').style.display = 'none';
+                    document.getElementById('estado-error').style.display = 'block';
+                    document.getElementById('error-mensaje').textContent = err.message ||
+                        'No se pudo obtener el archivo de datos. Verifica la URL o tu conexión a internet.';
+                    document.getElementById('update-date').textContent = 'Error al cargar';
+                });
         }
 
         // ================================================================
@@ -3182,7 +3240,6 @@
 
             const ctx = canvas.getContext('2d');
 
-            // Crear degradado para IE Propia
             const gradientPropia = createGradient(ctx, COLORES_EVOLUCION.propia, 150);
 
             chartEvolucion = new Chart(ctx, {
@@ -3670,7 +3727,6 @@
 
             const ctx = canvas.getContext('2d');
 
-            // Degradado para IE Propia en modal
             const gradientPropia = createGradient(ctx, COLORES_EVOLUCION.propia, 280);
 
             chartModalEvolucion = new Chart(ctx, {
@@ -4057,29 +4113,14 @@
         // EVENTOS PRINCIPALES
         // ================================================================
 
-        function triggerFileInput() {
-            document.getElementById('file-input-excel').click();
-        }
-        document.getElementById('btn-cargar-excel').addEventListener('click', triggerFileInput);
-        document.getElementById('btn-cargar-inicial').addEventListener('click', triggerFileInput);
+        // ---- Botón refresh ----
+        document.getElementById('btn-refresh').addEventListener('click', function() {
+            cargarDatos();
+        });
 
-        document.getElementById('file-input-excel').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(loadEvent) {
-                try {
-                    const data = new Uint8Array(loadEvent.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(firstSheet);
-                    procesarDatosExcel(json);
-                } catch (err) {
-                    alert('Error al leer el archivo: ' + err.message);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-            this.value = '';
+        // ---- Botón reintentar (error) ----
+        document.getElementById('btn-reintentar').addEventListener('click', function() {
+            cargarDatos();
         });
 
         document.getElementById('filtro-periodo').addEventListener('change', function() {
@@ -4205,8 +4246,6 @@
             });
         });
 
-        document.getElementById('btn-refresh').addEventListener('click', function() { aplicarFiltros(); });
-
         // ================================================================
         // EXPORTAR
         // ================================================================
@@ -4306,16 +4345,12 @@
             document.getElementById('export-pdf').click();
         });
 
+        // ================================================================
+        // INICIO - CARGA AUTOMÁTICA
+        // ================================================================
         console.log('📊 Índices Estratégicos - Mornese Analytics');
-        console.log('📂 Carga tu archivo Excel para comenzar.');
-        console.log('✅ Evolución Premium: área azul degradada solo para IE Propia');
-        console.log('✅ Tooltip tipo tarjeta flotante con blur');
-        console.log('✅ Línea vertical azul tenue con crosshair');
-        console.log('✅ Halo blanco en punto activo');
-        console.log('✅ Leyenda con líneas en lugar de puntos');
-        console.log('✅ Badge de cartera tipo píldora');
-        console.log('✅ Animación inicial de 700ms');
-        console.log('✅ Fondo sutil degradado en el área del gráfico');
+        console.log('📂 Cargando datos automáticamente desde:', RUTA_EXCEL);
+        cargarDatos();
     </script>
 
 </body>
