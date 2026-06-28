@@ -19,7 +19,7 @@
 
     <style>
         /* ============================================================
-           ESTILOS COMPLETOS - ARQUITECTURA DE EVENTOS
+           ESTILOS COMPLETOS - VERSIÓN CORREGIDA
            ============================================================ */
         :root {
             --color-primary: #1a2a6c;
@@ -1037,7 +1037,7 @@
         }
 
         /* ============================================================
-           EVOLUCION - PREMIUM
+           EVOLUCION - PREMIUM (CON POPUP DE SELECCIÓN)
            ============================================================ */
         #evolucion-panel {
             grid-column: 1;
@@ -2479,7 +2479,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 3: EVOLUCION IE POR CARTERA (PREMIUM) -->
+                <!-- PANEL 3: EVOLUCION IE POR CARTERA (CON POPUP) -->
                 <div class="panel" id="evolucion-panel">
                     <div class="panel-header">
                         <div class="panel-header-left">
@@ -2758,54 +2758,16 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT COMPLETO - ARQUITECTURA DE EVENTOS
+    JAVASCRIPT COMPLETO - SOLO MODIFICADO EVOLUTIVO
     ============================================================ -->
     <script>
         // ================================================================
-        // SISTEMA DE EVENTOS
-        // ================================================================
-        const DashboardEvents = {
-            _listeners: {},
-            on: function(event, callback) {
-                if (!this._listeners[event]) {
-                    this._listeners[event] = [];
-                }
-                this._listeners[event].push(callback);
-            },
-            off: function(event, callback) {
-                if (!this._listeners[event]) return;
-                this._listeners[event] = this._listeners[event].filter(cb => cb !== callback);
-            },
-            emit: function(event, data) {
-                if (!this._listeners[event]) return;
-                this._listeners[event].forEach(callback => {
-                    try {
-                        callback(data);
-                    } catch (e) {
-                        console.error(`Error en evento ${event}:`, e);
-                    }
-                });
-            }
-        };
-
-        // ================================================================
-        // CONFIGURACIÓN
+        // CONFIGURACIÓN - RUTA DEL EXCEL
         // ================================================================
         const RUTA_EXCEL = 'https://raw.githubusercontent.com/JMartinezMornese/indices-estrategicos/main/data/Base%20Indices%20Estrategicos.xlsx';
 
         // ================================================================
-        // ESTADO GLOBAL (SINGLE SOURCE OF TRUTH)
-        // ================================================================
-        const dashboardState = {
-            pais: 'todos',
-            periodo: '',
-            indicador: 'ie_propia',
-            cartera: null,
-            carterasDisponibles: [],
-        };
-
-        // ================================================================
-        // DATOS
+        // ESTADO GLOBAL
         // ================================================================
         let datos = [];
         let datosFiltrados = [];
@@ -2814,6 +2776,33 @@
         let chartModalEvolucion = null;
         let datosCargados = false;
         let cargando = false;
+        let carterasDisponibles = [];
+        let carteraActual = null; // Variable global para la cartera seleccionada
+
+        const estado = {
+            pais: 'todos',
+            periodo: '',
+            indicador: 'ie_propia',
+            page: 1,
+            pageSize: 8,
+            sortCol: 'cartera',
+            sortDir: 'asc',
+            busqueda: '',
+            tablaTipo: 'mensual',
+            tablaPeriodoSeleccionado: '',
+        };
+
+        const INDICADOR_LABEL = {
+            ie_maxima: 'IE Máxima',
+            ie_promedio: 'IE Promedio',
+            ie_propia: 'IE Propia'
+        };
+
+        const COLORES_EVOLUCION = {
+            maxima: '#FF3131',
+            promedio: '#2DBE60',
+            propia: '#1E5EFF'
+        };
 
         // ================================================================
         // UTILITIES
@@ -2907,15 +2896,6 @@
         };
 
         // ================================================================
-        // COLORES
-        // ================================================================
-        const COLORES_EVOLUCION = {
-            maxima: '#FF3131',
-            promedio: '#2DBE60',
-            propia: '#1E5EFF'
-        };
-
-        // ================================================================
         // DROPDOWN PERSONALIZADO PARA PAÍS
         // ================================================================
         const dropdown = document.getElementById('pais-dropdown');
@@ -2964,8 +2944,9 @@
 
                 if (isOpen) toggleDropdown();
 
-                dashboardState.pais = value;
-                actualizarDashboardCompleto();
+                estado.pais = value;
+                estado.page = 1;
+                aplicarFiltros();
             });
         });
 
@@ -2978,7 +2959,7 @@
         });
 
         // ================================================================
-        // POPUP DE CARTERA (BADGE CLICK)
+        // POPUP DE CARTERA (BADGE CLICK) - NUEVO
         // ================================================================
         const carteraBadge = document.getElementById('evolucion-cartera-nombre');
         const carteraPopup = document.getElementById('cartera-popup');
@@ -2990,10 +2971,11 @@
         function togglePopup() {
             popupOpen = !popupOpen;
             carteraPopup.classList.toggle('open', popupOpen);
-            carteraBadge.querySelector('.dropdown-arrow').classList.toggle('open', popupOpen);
+            const arrow = carteraBadge.querySelector('.dropdown-arrow');
+            if (arrow) arrow.classList.toggle('open', popupOpen);
             if (popupOpen) {
                 popupSearch.value = '';
-                renderPopupList(dashboardState.carterasDisponibles);
+                renderPopupList(carterasDisponibles);
                 setTimeout(() => popupSearch.focus(), 100);
             }
         }
@@ -3005,7 +2987,7 @@
                 return;
             }
             popupList.innerHTML = lista.map(c => {
-                const active = c === dashboardState.cartera ? 'active' : '';
+                const active = c === carteraActual ? 'active' : '';
                 return `<div class="popup-item ${active}" data-cartera="${c}">
                             <span>${c}</span>
                             <span class="check"><i class="fas fa-check"></i></span>
@@ -3028,7 +3010,7 @@
 
         popupSearch.addEventListener('input', function() {
             const search = this.value.toLowerCase().trim();
-            const filtradas = dashboardState.carterasDisponibles.filter(c =>
+            const filtradas = carterasDisponibles.filter(c =>
                 c.toLowerCase().includes(search)
             );
             renderPopupList(filtradas);
@@ -3041,63 +3023,36 @@
         });
 
         // ================================================================
-        // FUNCIÓN PRINCIPAL: SELECCIONAR CARTERA
+        // FUNCIÓN PRINCIPAL: SELECCIONAR CARTERA - NUEVA
         // ================================================================
         function seleccionarCartera(nombre) {
-            if (dashboardState.cartera === nombre) return;
+            if (carteraActual === nombre) return;
 
-            dashboardState.cartera = nombre;
-            document.getElementById('evolucion-cartera-nombre').innerHTML =
-                `📂 ${nombre} <span class="dropdown-arrow">▼</span>`;
+            carteraActual = nombre;
 
-            // Actualizar badges en modales
+            // Actualizar badge principal
+            carteraBadge.innerHTML = `📂 ${nombre} <span class="dropdown-arrow">▼</span>`;
+
+            // Actualizar badge del modal
             const modalBadge = document.getElementById('modal-evolucion-cartera');
             if (modalBadge) modalBadge.textContent = `📂 ${nombre}`;
 
-            // Emitir evento de cambio de cartera
-            DashboardEvents.emit('carteraChanged', nombre);
+            // Actualizar el gráfico
+            actualizarEvolucionPremium();
 
-            // Actualizar todo el dashboard
-            actualizarDashboardCompleto();
-        }
-
-        // ================================================================
-        // ACTUALIZAR DASHBOARD COMPLETO
-        // ================================================================
-        function actualizarDashboardCompleto() {
-            if (!datosCargados || datos.length === 0) return;
-
-            const pais = dashboardState.pais;
-            const periodo = dashboardState.periodo;
-            const indicador = dashboardState.indicador;
-            const cartera = dashboardState.cartera;
-
-            // Filtrar datos
-            datosFiltrados = datos.filter(row => {
-                if (pais !== 'todos' && row.pais !== pais) return false;
-                if (periodo && row.periodo !== periodo) return false;
-                return true;
-            });
+            // Actualizar rankings (resaltar cartera seleccionada)
+            actualizarRankingMensual();
+            actualizarRankingPromedio();
 
             // Actualizar KPIs
             actualizarKPIs();
 
-            // Actualizar Rankings
-            actualizarRankingMensual();
-            actualizarRankingPromedio();
-
-            // Actualizar Tabla
+            // Actualizar tabla
             actualizarTabla();
-
-            // Actualizar Evolución
-            actualizarEvolucionPremium();
-
-            // Actualizar Modales
-            actualizarModales();
         }
 
         // ================================================================
-        // CARGA DE DATOS DESDE EXCEL
+        // CARGA DE DATOS DESDE EXCEL (AUTOMÁTICA)
         // ================================================================
         function cargarDatos() {
             if (cargando) return;
@@ -3145,7 +3100,7 @@
 
                         datos = raw;
                         periodos = [...new Set(datos.map(d => d.periodo))].sort();
-                        dashboardState.carterasDisponibles = [...new Set(datos.map(d => d.cartera))].sort();
+                        carterasDisponibles = [...new Set(datos.map(d => d.cartera))].sort();
 
                         document.getElementById('update-date').textContent = new Date().toLocaleString('es-ES');
 
@@ -3165,18 +3120,18 @@
                             const sorted = [...dataUltimo].sort((a, b) => b.ie_propia - a.ie_propia);
                             const mejor = sorted[0];
                             if (mejor) {
-                                dashboardState.cartera = mejor.cartera;
-                                document.getElementById('evolucion-cartera-nombre').innerHTML =
+                                carteraActual = mejor.cartera;
+                                carteraBadge.innerHTML =
                                     `📂 ${mejor.cartera} <span class="dropdown-arrow">▼</span>`;
                                 const modalBadge = document.getElementById('modal-evolucion-cartera');
                                 if (modalBadge) modalBadge.textContent = `📂 ${mejor.cartera}`;
                             }
                         }
 
-                        // Actualizar popup con carteras disponibles
-                        renderPopupList(dashboardState.carterasDisponibles);
+                        // Renderizar popup con carteras disponibles
+                        renderPopupList(carterasDisponibles);
 
-                        actualizarDashboardCompleto();
+                        aplicarFiltros();
 
                     } catch (err) {
                         throw new Error('Error al procesar el archivo: ' + err.message);
@@ -3209,11 +3164,11 @@
             if (periodos.length > 0) {
                 const ultimo = periodos[periodos.length - 1];
                 periodoSelect.value = ultimo;
-                dashboardState.periodo = ultimo;
+                estado.periodo = ultimo;
             }
 
             document.getElementById('filtro-indicador').value = 'ie_propia';
-            dashboardState.indicador = 'ie_propia';
+            estado.indicador = 'ie_propia';
 
             const defaultOption = optionsContainer.querySelector('.option[data-value="todos"]');
             if (defaultOption) {
@@ -3251,21 +3206,62 @@
 
                 if (periodos.length > 0) {
                     select.value = 'mensual_' + periodos[periodos.length - 1];
+                    estado.tablaPeriodoSeleccionado = periodos[periodos.length - 1];
+                    estado.tablaTipo = 'mensual';
                 } else {
                     select.value = 'promedio';
+                    estado.tablaTipo = 'promedio';
+                    estado.tablaPeriodoSeleccionado = '';
                 }
             });
+        }
+
+        // ================================================================
+        // APLICAR FILTROS
+        // ================================================================
+        function aplicarFiltros() {
+            if (!datosCargados || datos.length === 0) return;
+
+            const pais = estado.pais;
+            const periodo = estado.periodo;
+            const indicador = estado.indicador;
+            const busqueda = estado.busqueda.toLowerCase().trim();
+
+            datosFiltrados = datos.filter(row => {
+                if (pais !== 'todos' && row.pais !== pais) return false;
+                if (periodo && row.periodo !== periodo) return false;
+                if (busqueda && !row.cartera.toLowerCase().includes(busqueda)) return false;
+                return true;
+            });
+
+            const col = estado.sortCol;
+            const dir = estado.sortDir === 'asc' ? 1 : -1;
+            datosFiltrados.sort((a, b) => {
+                let va = a[col] || 0;
+                let vb = b[col] || 0;
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+                if (va < vb) return -1 * dir;
+                if (va > vb) return 1 * dir;
+                return 0;
+            });
+
+            actualizarKPIs();
+            actualizarRankingMensual();
+            actualizarRankingPromedio();
+            actualizarEvolucionPremium();
+            actualizarTabla();
+            actualizarModales();
         }
 
         // ================================================================
         // ACTUALIZAR KPIs
         // ================================================================
         function actualizarKPIs() {
-            const indicador = dashboardState.indicador;
-            const periodo = dashboardState.periodo;
-            const cartera = dashboardState.cartera;
+            const indicador = estado.indicador;
+            const periodo = estado.periodo;
 
-            if (!periodo || datosFiltrados.length === 0 || !cartera) {
+            if (!periodo || datosFiltrados.length === 0) {
                 document.getElementById('kpi-mejor-valor').textContent = '--';
                 document.getElementById('kpi-mejor-nombre').textContent = 'Seleccione un período';
                 document.getElementById('kpi-mejor-variacion').textContent = '▲ 0%';
@@ -3310,9 +3306,6 @@
             const sum = data.reduce((acc, r) => acc + getIE(r, indicador), 0);
             const avg = sum / data.length;
 
-            // Buscar datos de la cartera seleccionada
-            const carteraData = data.find(r => r.cartera === cartera);
-
             document.getElementById('kpi-mejor-valor').textContent = fmtIE(getIE(mejor, indicador));
             document.getElementById('kpi-mejor-nombre').textContent = mejor.cartera;
             document.getElementById('kpi-mejor-variacion').textContent = `▲ ${fmtIE(getIE(mejor, indicador))}`;
@@ -3331,12 +3324,11 @@
         }
 
         // ================================================================
-        // ACTUALIZAR RANKING MENSUAL
+        // ACTUALIZAR RANKING MENSUAL - MODIFICADO PARA USAR carteraActual
         // ================================================================
         function actualizarRankingMensual() {
-            const indicador = dashboardState.indicador;
-            const periodo = dashboardState.periodo;
-            const cartera = dashboardState.cartera;
+            const indicador = estado.indicador;
+            const periodo = estado.periodo;
             const lista = document.getElementById('ranking-mensual-lista');
 
             if (!periodo) {
@@ -3362,7 +3354,7 @@
                 const val = getIE(row, indicador);
                 const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
                 const cls = pos === 1 ? 'top1' : '';
-                const sel = cartera === row.cartera ? 'seleccionada' : '';
+                const sel = carteraActual === row.cartera ? 'seleccionada' : '';
                 return `<div class="ranking-item ${cls} ${sel}" data-cartera="${row.cartera}">
                             <div class="pos">#${pos}</div>
                             <div class="name">${row.cartera}</div>
@@ -3384,11 +3376,10 @@
         }
 
         // ================================================================
-        // ACTUALIZAR RANKING PROMEDIO
+        // ACTUALIZAR RANKING PROMEDIO - MODIFICADO PARA USAR carteraActual
         // ================================================================
         function actualizarRankingPromedio() {
-            const indicador = dashboardState.indicador;
-            const cartera = dashboardState.cartera;
+            const indicador = estado.indicador;
             const lista = document.getElementById('ranking-promedio-lista');
 
             if (periodos.length < 1) {
@@ -3403,16 +3394,16 @@
             }
 
             let data = datos;
-            if (dashboardState.pais !== 'todos') {
-                data = data.filter(r => r.pais === dashboardState.pais);
+            if (estado.pais !== 'todos') {
+                data = data.filter(r => r.pais === estado.pais);
             }
 
             const carteras = [...new Set(data.map(r => r.cartera))];
-            const promedios = carteras.map(c => {
-                const rows = data.filter(r => r.cartera === c && ultimos.includes(r.periodo));
+            const promedios = carteras.map(cartera => {
+                const rows = data.filter(r => r.cartera === cartera && ultimos.includes(r.periodo));
                 if (rows.length === 0) return null;
                 const sum = rows.reduce((acc, r) => acc + getIE(r, indicador), 0);
-                return { cartera: c, promedio: sum / rows.length, count: rows.length };
+                return { cartera, promedio: sum / rows.length, count: rows.length };
             }).filter(r => r !== null && r.count > 0);
 
             if (promedios.length === 0) {
@@ -3431,7 +3422,7 @@
                 const pos = i + 1;
                 const pct = maxVal > 0 ? (row.promedio / maxVal) * 100 : 0;
                 const cls = pos === 1 ? 'top1' : '';
-                const sel = cartera === row.cartera ? 'seleccionada' : '';
+                const sel = carteraActual === row.cartera ? 'seleccionada' : '';
                 return `<div class="ranking-item ${cls} ${sel}" data-cartera="${row.cartera}">
                             <div class="pos">#${pos}</div>
                             <div class="name">${row.cartera}</div>
@@ -3453,21 +3444,25 @@
         }
 
         // ================================================================
-        // ACTUALIZAR EVOLUCION PREMIUM
+        // ACTUALIZAR EVOLUCION PREMIUM - MODIFICADA PARA USAR carteraActual
         // ================================================================
         function actualizarEvolucionPremium() {
             const canvas = document.getElementById('evolucion-chart');
-            const cartera = dashboardState.cartera;
+            const nombreLabel = document.getElementById('evolucion-cartera-nombre');
 
-            if (!cartera) {
+            if (!carteraActual) {
+                nombreLabel.innerHTML = '📂 seleccione una cartera <span class="dropdown-arrow">▼</span>';
                 if (chartEvolucion) { chartEvolucion.destroy();
                     chartEvolucion = null; }
                 return;
             }
 
+            const cartera = carteraActual;
+            nombreLabel.innerHTML = `📂 ${cartera} <span class="dropdown-arrow">▼</span>`;
+
             let data = datos.filter(r => r.cartera === cartera);
-            if (dashboardState.pais !== 'todos') {
-                data = data.filter(r => r.pais === dashboardState.pais);
+            if (estado.pais !== 'todos') {
+                data = data.filter(r => r.pais === estado.pais);
             }
 
             if (data.length === 0) {
@@ -3487,6 +3482,7 @@
                 chartEvolucion = null; }
 
             const ctx = canvas.getContext('2d');
+
             const gradientPropia = createGradient(ctx, COLORES_EVOLUCION.propia, 150);
 
             chartEvolucion = new Chart(ctx, {
@@ -3543,7 +3539,13 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    interaction: { mode: 'index', intersect: false, axis: 'x' },
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                        axis: 'x'
+                    },
+
                     plugins: {
                         tooltip: {
                             enabled: true,
@@ -3551,9 +3553,14 @@
                             intersect: false,
                             backgroundColor: 'rgba(255,255,255,0.92)',
                             titleColor: '#1a2a6c',
-                            titleFont: { weight: '700', size: 12 },
+                            titleFont: {
+                                weight: '700',
+                                size: 12,
+                            },
                             bodyColor: '#1C2640',
-                            bodyFont: { size: 11 },
+                            bodyFont: {
+                                size: 11,
+                            },
                             borderColor: 'transparent',
                             borderWidth: 0,
                             cornerRadius: 12,
@@ -3569,18 +3576,33 @@
                                 }
                             }
                         },
-                        legend: { display: false }
+                        legend: {
+                            display: false
+                        }
                     },
+
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grid: { color: 'rgba(50,70,100,0.035)', drawBorder: false },
-                            ticks: { font: { size: 9, weight: '500' }, color: '#8A94A6', callback: function(v) { return v
-                                        .toFixed(1); } },
-                            border: { display: false }
+                            grid: {
+                                color: 'rgba(50,70,100,0.035)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { size: 9, weight: '500' },
+                                color: '#8A94A6',
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
                         },
                         x: {
-                            grid: { display: false },
+                            grid: {
+                                display: false
+                            },
                             ticks: {
                                 font: function(context) {
                                     try {
@@ -3609,50 +3631,732 @@
                                     return '#8A94A6';
                                 }
                             },
-                            border: { display: false }
+                            border: {
+                                display: false
+                            }
                         }
                     },
-                    animation: { duration: 700, easing: 'easeOutQuart' },
-                    animations: { radius: { duration: 250 } }
+
+                    animation: {
+                        duration: 700,
+                        easing: 'easeOutQuart'
+                    },
+
+                    animations: {
+                        radius: {
+                            duration: 250
+                        }
+                    }
                 },
+
                 plugins: [crosshairPlugin]
             });
+
+            // También actualizar el modal si está abierto
+            if (document.getElementById('modal-evolucion').classList.contains('active')) {
+                actualizarModalEvolucionPremium();
+            }
         }
-
-        // ================================================================
-        // SUSCRIPCIÓN A EVENTOS
-        // ================================================================
-        DashboardEvents.on('carteraChanged', function(cartera) {
-            // Actualizar evolución
-            actualizarEvolucionPremium();
-
-            // Actualizar rankings (resaltar cartera seleccionada)
-            actualizarRankingMensual();
-            actualizarRankingPromedio();
-
-            // Actualizar KPIs
-            actualizarKPIs();
-
-            // Actualizar tabla
-            actualizarTabla();
-
-            // Actualizar modales
-            actualizarModales();
-        });
 
         // ================================================================
         // ACTUALIZAR TABLA
         // ================================================================
         function actualizarTabla() {
-            // ... (código de tabla existente)
+            const body = document.getElementById('tabla-body');
+            const info = document.getElementById('tabla-info');
+            const pagInfo = document.getElementById('pag-info');
+
+            const selector = document.getElementById('tabla-tipo-dato');
+            const tipoValor = selector ? selector.value : 'promedio';
+
+            const { data, label } = obtenerDatosTabla(tipoValor);
+            const total = data.length;
+            const pageSize = estado.pageSize;
+            const totalPages = Math.ceil(total / pageSize) || 1;
+
+            if (estado.page > totalPages) estado.page = totalPages;
+            const start = (estado.page - 1) * pageSize;
+            const end = Math.min(start + pageSize, total);
+            const pageData = data.slice(start, end);
+
+            if (total === 0) {
+                body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No hay datos</td></tr>';
+                info.textContent = 'Mostrando 0 a 0 de 0 carteras';
+                pagInfo.textContent = '1 / 1';
+                document.getElementById('pag-prev').disabled = true;
+                document.getElementById('pag-next').disabled = true;
+                return;
+            }
+
+            const renderRows = (datos) => {
+                return datos.map(row => {
+                    const sel = carteraActual === row.cartera ? 'seleccionada' : '';
+                    return `<tr class="${sel}" data-cartera="${row.cartera}">
+                                <td><strong>${row.cartera}</strong></td>
+                                <td>${fmtPct(row.honorario_promedio)}</td>
+                                <td>${fmtPct(row.efici_maxima)}</td>
+                                <td>${fmtPct(row.efici_prome)}</td>
+                                <td>${fmtPct(row.efici_propia)}</td>
+                                <td><span class="num">${fmtIE(row.ie_maxima)}</span></td>
+                                <td><span class="num">${fmtIE(row.ie_promedio)}</span></td>
+                                <td><span class="num destacado">${fmtIE(row.ie_propia)}</span></td>
+                            </tr>`;
+                }).join('');
+            };
+
+            body.innerHTML = renderRows(pageData);
+
+            body.querySelectorAll('tr[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    const nombre = this.dataset.cartera;
+                    seleccionarCartera(nombre);
+                });
+            });
+
+            info.textContent = `Mostrando ${start + 1} a ${end} de ${total} carteras (${label})`;
+            pagInfo.textContent = `${estado.page} / ${totalPages}`;
+
+            document.getElementById('pag-prev').disabled = estado.page <= 1;
+            document.getElementById('pag-next').disabled = estado.page >= totalPages;
+
+            document.querySelectorAll('#tabla-carteras thead th').forEach(th => {
+                th.classList.remove('active');
+                if (th.dataset.col === estado.sortCol) {
+                    th.classList.add('active');
+                }
+            });
+        }
+
+        // ================================================================
+        // OBTENER DATOS PARA TABLA
+        // ================================================================
+        function obtenerDatosTabla(tipo, sortCol, sortDir, busqueda) {
+            const col = sortCol || estado.sortCol;
+            const dir = sortDir || estado.sortDir;
+            const search = busqueda !== undefined ? busqueda : estado.busqueda;
+            const indicador = estado.indicador;
+            const pais = estado.pais;
+
+            let data = [];
+            let label = '';
+            let tipoDato = tipo || estado.tablaTipo;
+            let periodoSeleccionado = estado.tablaPeriodoSeleccionado;
+
+            if (tipo && tipo.startsWith('mensual_')) {
+                periodoSeleccionado = tipo.replace('mensual_', '');
+                tipoDato = 'mensual';
+            }
+
+            if (tipoDato === 'mensual' && periodoSeleccionado) {
+                data = datos.filter(r => r.periodo === periodoSeleccionado);
+                if (pais !== 'todos') {
+                    data = data.filter(r => r.pais === pais);
+                }
+                label = formatoPeriodo(periodoSeleccionado);
+            } else if (tipoDato === 'promedio' || !periodoSeleccionado) {
+                const ultimos = obtenerUltimosPeriodos(periodos, 3);
+                let rawData = datos;
+                if (pais !== 'todos') {
+                    rawData = rawData.filter(r => r.pais === pais);
+                }
+                const carteras = [...new Set(rawData.map(r => r.cartera))];
+                data = carteras.map(cartera => {
+                    const rows = rawData.filter(r => r.cartera === cartera && ultimos.includes(r.periodo));
+                    if (rows.length === 0) return null;
+                    const avgMax = rows.reduce((acc, r) => acc + (r.efici_maxima || 0), 0) / rows.length;
+                    const avgProm = rows.reduce((acc, r) => acc + (r.efici_prome || 0), 0) / rows.length;
+                    const avgProp = rows.reduce((acc, r) => acc + (r.efici_propia || 0), 0) / rows.length;
+                    const avgHon = rows.reduce((acc, r) => acc + (r.honorario_promedio || 0), 0) / rows.length;
+                    const ieMax = avgMax * avgHon * 100;
+                    const ieProm = avgProm * avgHon * 100;
+                    const ieProp = avgProp * avgHon * 100;
+                    return {
+                        cartera,
+                        efici_maxima: avgMax,
+                        efici_prome: avgProm,
+                        efici_propia: avgProp,
+                        honorario_promedio: avgHon,
+                        ie_maxima: ieMax,
+                        ie_promedio: ieProm,
+                        ie_propia: ieProp,
+                        pais: rows[0]?.pais || '',
+                        periodo: ultimos.join(', '),
+                    };
+                }).filter(r => r !== null);
+                label = 'Promedio últimos 3 meses';
+            }
+
+            const searchLower = search.toLowerCase().trim();
+            if (searchLower) {
+                data = data.filter(r => r.cartera.toLowerCase().includes(searchLower));
+            }
+
+            const dirMultiplier = dir === 'asc' ? 1 : -1;
+            data.sort((a, b) => {
+                let va = a[col] || 0;
+                let vb = b[col] || 0;
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+                if (va < vb) return -1 * dirMultiplier;
+                if (va > vb) return 1 * dirMultiplier;
+                return 0;
+            });
+
+            return { data, label };
         }
 
         // ================================================================
         // ACTUALIZAR MODALES
         // ================================================================
         function actualizarModales() {
-            // ... (código de modales existente)
+            actualizarModalRanking();
+            actualizarModalRankingPromedio();
+            actualizarModalEvolucionPremium();
+            actualizarModalTabla();
         }
+
+        // ---- MODAL RANKING ----
+        function actualizarModalRanking() {
+            const indicador = estado.indicador;
+            const periodo = estado.periodo;
+            const lista = document.getElementById('modal-ranking-lista');
+
+            if (!periodo) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Seleccione un período</div>';
+                return;
+            }
+
+            const data = datosFiltrados.filter(r => r.periodo === periodo);
+            if (data.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Sin datos para este período</div>';
+                return;
+            }
+
+            const sorted = [...data].sort((a, b) => getIE(b, indicador) - getIE(a, indicador));
+            const maxVal = sorted.length > 0 ? getIE(sorted[0], indicador) : 1;
+
+            document.getElementById('modal-ranking-titulo').textContent = INDICADOR_LABEL[indicador];
+            document.getElementById('modal-eje-max').textContent = fmtIE(maxVal);
+
+            const html = sorted.map((row, i) => {
+                const pos = i + 1;
+                const val = getIE(row, indicador);
+                const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
+                const cls = pos === 1 ? 'top1' : '';
+                const sel = carteraActual === row.cartera ? 'seleccionada' : '';
+                return `<div class="ranking-item ${cls} ${sel}" data-cartera="${row.cartera}">
+                            <div class="pos">#${pos}</div>
+                            <div class="name">${row.cartera}</div>
+                            <div class="barra-wrapper">
+                                <div class="barra" style="width:${Math.max(pct, 4)}%;"></div>
+                            </div>
+                            <div class="valor">${fmtIE(val)}</div>
+                        </div>`;
+            }).join('');
+
+            lista.innerHTML = html;
+
+            lista.querySelectorAll('.ranking-item[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    const nombre = this.dataset.cartera;
+                    seleccionarCartera(nombre);
+                    cerrarModal('modal-ranking');
+                });
+            });
+
+            document.getElementById('modal-ranking-info').textContent =
+                `Ranking ${INDICADOR_LABEL[indicador]} - ${formatoPeriodo(periodo)} (${data.length} carteras)`;
+        }
+
+        // ---- MODAL RANKING PROMEDIO ----
+        function actualizarModalRankingPromedio() {
+            const indicador = estado.indicador;
+            const lista = document.getElementById('modal-ranking-promedio-lista');
+
+            if (periodos.length < 1) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">No hay períodos disponibles</div>';
+                return;
+            }
+
+            const ultimos = obtenerUltimosPeriodos(periodos, 3);
+            if (ultimos.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">No hay datos suficientes</div>';
+                return;
+            }
+
+            let data = datos;
+            if (estado.pais !== 'todos') {
+                data = data.filter(r => r.pais === estado.pais);
+            }
+
+            const carteras = [...new Set(data.map(r => r.cartera))];
+            const promedios = carteras.map(cartera => {
+                const rows = data.filter(r => r.cartera === cartera && ultimos.includes(r.periodo));
+                if (rows.length === 0) return null;
+                const sum = rows.reduce((acc, r) => acc + getIE(r, indicador), 0);
+                return { cartera, promedio: sum / rows.length, count: rows.length };
+            }).filter(r => r !== null && r.count > 0);
+
+            if (promedios.length === 0) {
+                lista.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Sin datos para el promedio</div>';
+                return;
+            }
+
+            const sorted = promedios.sort((a, b) => b.promedio - a.promedio);
+            const maxVal = sorted.length > 0 ? sorted[0].promedio : 1;
+            const top = sorted.slice(0, 20);
+
+            document.getElementById('modal-ranking-promedio-titulo').textContent = INDICADOR_LABEL[indicador];
+            document.getElementById('modal-promedio-eje-max').textContent = fmtIE(maxVal);
+
+            const html = top.map((row, i) => {
+                const pos = i + 1;
+                const pct = maxVal > 0 ? (row.promedio / maxVal) * 100 : 0;
+                const cls = pos === 1 ? 'top1' : '';
+                const sel = carteraActual === row.cartera ? 'seleccionada' : '';
+                return `<div class="ranking-item ${cls} ${sel}" data-cartera="${row.cartera}">
+                            <div class="pos">#${pos}</div>
+                            <div class="name">${row.cartera}</div>
+                            <div class="barra-wrapper">
+                                <div class="barra" style="width:${Math.max(pct, 4)}%;"></div>
+                            </div>
+                            <div class="valor">${fmtIE(row.promedio)}</div>
+                        </div>`;
+            }).join('');
+
+            lista.innerHTML = html;
+
+            lista.querySelectorAll('.ranking-item[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    const nombre = this.dataset.cartera;
+                    seleccionarCartera(nombre);
+                    cerrarModal('modal-ranking-promedio-modal');
+                });
+            });
+
+            document.getElementById('modal-ranking-promedio-info').textContent =
+                `Ranking promedio ${INDICADOR_LABEL[indicador]} - últimos 3 meses (${top.length} carteras)`;
+        }
+
+        // ---- MODAL EVOLUCION PREMIUM ----
+        function actualizarModalEvolucionPremium() {
+            const canvas = document.getElementById('modal-evolucion-chart');
+            const nombreLabel = document.getElementById('modal-evolucion-cartera');
+
+            if (!carteraActual) {
+                nombreLabel.textContent = '📂 seleccione una cartera';
+                if (chartModalEvolucion) { chartModalEvolucion.destroy();
+                    chartModalEvolucion = null; }
+                return;
+            }
+
+            const cartera = carteraActual;
+            nombreLabel.textContent = `📂 ${cartera}`;
+
+            let data = datos.filter(r => r.cartera === cartera);
+            if (estado.pais !== 'todos') {
+                data = data.filter(r => r.pais === estado.pais);
+            }
+
+            if (data.length === 0) {
+                nombreLabel.textContent = `"${cartera}" - sin datos`;
+                if (chartModalEvolucion) { chartModalEvolucion.destroy();
+                    chartModalEvolucion = null; }
+                return;
+            }
+
+            data.sort((a, b) => a.periodo.localeCompare(b.periodo));
+            const labels = data.map(r => formatoPeriodo(r.periodo));
+            const valoresMaxima = data.map(r => r.ie_maxima);
+            const valoresPromedio = data.map(r => r.ie_promedio);
+            const valoresPropia = data.map(r => r.ie_propia);
+
+            if (chartModalEvolucion) { chartModalEvolucion.destroy();
+                chartModalEvolucion = null; }
+
+            const ctx = canvas.getContext('2d');
+
+            const gradientPropia = createGradient(ctx, COLORES_EVOLUCION.propia, 280);
+
+            chartModalEvolucion = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'IE Máxima',
+                        data: valoresMaxima,
+                        borderColor: COLORES_EVOLUCION.maxima,
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: COLORES_EVOLUCION.maxima,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: false,
+                        tension: 0.3,
+                    }, {
+                        label: 'IE Promedio',
+                        data: valoresPromedio,
+                        borderColor: COLORES_EVOLUCION.promedio,
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: COLORES_EVOLUCION.promedio,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: false,
+                        tension: 0.3,
+                    }, {
+                        label: 'IE Propia',
+                        data: valoresPropia,
+                        borderColor: COLORES_EVOLUCION.propia,
+                        backgroundColor: gradientPropia,
+                        borderWidth: 3.5,
+                        pointRadius: 0,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: COLORES_EVOLUCION.propia,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointHoverBorderWidth: 5,
+                        pointHoverBorderColor: '#ffffff',
+                        fill: true,
+                        tension: 0.3,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                        axis: 'x'
+                    },
+
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255,255,255,0.92)',
+                            titleColor: '#1a2a6c',
+                            titleFont: {
+                                weight: '700',
+                                size: 13,
+                            },
+                            bodyColor: '#1C2640',
+                            bodyFont: {
+                                size: 12,
+                            },
+                            borderColor: 'transparent',
+                            borderWidth: 0,
+                            cornerRadius: 12,
+                            padding: 16,
+                            displayColors: true,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+                                    return label + ': ' + value.toFixed(2);
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(50,70,100,0.035)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { size: 10, weight: '500' },
+                                color: '#8A94A6',
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: function(context) {
+                                    try {
+                                        const chartObj = chartModalEvolucion || chart;
+                                        const activeElements = chartObj?.tooltip?._active || [];
+                                        if (activeElements.length > 0) {
+                                            const activeIndex = activeElements[0].index;
+                                            if (context.index === activeIndex) {
+                                                return { weight: '700', size: 12 };
+                                            }
+                                        }
+                                    } catch (e) { /* ignorar */ }
+                                    return { weight: '500', size: 10 };
+                                },
+                                color: function(context) {
+                                    try {
+                                        const chartObj = chartModalEvolucion || chart;
+                                        const activeElements = chartObj?.tooltip?._active || [];
+                                        if (activeElements.length > 0) {
+                                            const activeIndex = activeElements[0].index;
+                                            if (context.index === activeIndex) {
+                                                return '#1E5EFF';
+                                            }
+                                        }
+                                    } catch (e) { /* ignorar */ }
+                                    return '#8A94A6';
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        }
+                    },
+
+                    animation: {
+                        duration: 700,
+                        easing: 'easeOutQuart'
+                    },
+
+                    animations: {
+                        radius: {
+                            duration: 250
+                        }
+                    }
+                },
+
+                plugins: [crosshairPlugin]
+            });
+
+            document.getElementById('modal-evolucion-info').textContent =
+                `Evolución IE por Cartera - ${cartera}`;
+        }
+
+        // ---- MODAL TABLA ----
+        function actualizarModalTabla() {
+            const body = document.getElementById('modal-tabla-body-content');
+            const info = document.getElementById('modal-tabla-info');
+
+            const selector = document.getElementById('modal-tabla-tipo-dato');
+            const tipo = selector ? selector.value : 'promedio';
+            const busqueda = document.getElementById('modal-tabla-buscar').value;
+            const col = estado.sortCol;
+            const dir = estado.sortDir;
+
+            const { data, label } = obtenerDatosTabla(tipo, col, dir, busqueda);
+            const total = data.length;
+
+            if (total === 0) {
+                body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No hay datos</td></tr>';
+                info.textContent = 'Mostrando 0 a 0 de 0 carteras';
+                return;
+            }
+
+            const renderRows = (datos) => {
+                return datos.map(row => {
+                    const sel = carteraActual === row.cartera ? 'seleccionada' : '';
+                    return `<tr class="${sel}" data-cartera="${row.cartera}">
+                                <td><strong>${row.cartera}</strong></td>
+                                <td>${fmtPct(row.honorario_promedio)}</td>
+                                <td>${fmtPct(row.efici_maxima)}</td>
+                                <td>${fmtPct(row.efici_prome)}</td>
+                                <td>${fmtPct(row.efici_propia)}</td>
+                                <td><span class="num">${fmtIE(row.ie_maxima)}</span></td>
+                                <td><span class="num">${fmtIE(row.ie_promedio)}</span></td>
+                                <td><span class="num destacado">${fmtIE(row.ie_propia)}</span></td>
+                            </tr>`;
+                }).join('');
+            };
+
+            body.innerHTML = renderRows(data);
+
+            body.querySelectorAll('tr[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    const nombre = this.dataset.cartera;
+                    seleccionarCartera(nombre);
+                    cerrarModal('modal-tabla');
+                });
+            });
+
+            info.textContent = `Mostrando ${total} carteras (${label})`;
+
+            document.querySelectorAll('#modal-tabla-body thead th').forEach(th => {
+                th.classList.remove('active');
+                if (th.dataset.col === estado.sortCol) {
+                    th.classList.add('active');
+                }
+            });
+        }
+
+        // ================================================================
+        // MODAL CONTROLS
+        // ================================================================
+        function abrirModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                if (id === 'modal-ranking') actualizarModalRanking();
+                else if (id === 'modal-ranking-promedio-modal') actualizarModalRankingPromedio();
+                else if (id === 'modal-evolucion') actualizarModalEvolucionPremium();
+                else if (id === 'modal-tabla') actualizarModalTabla();
+            }
+        }
+
+        function cerrarModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Eventos para botones de expandir
+        document.getElementById('expand-ranking').addEventListener('click', function(e) {
+            e.stopPropagation();
+            abrirModal('modal-ranking');
+        });
+
+        document.getElementById('expand-ranking-promedio').addEventListener('click', function(e) {
+            e.stopPropagation();
+            abrirModal('modal-ranking-promedio-modal');
+        });
+
+        document.getElementById('expand-evolucion').addEventListener('click', function(e) {
+            e.stopPropagation();
+            abrirModal('modal-evolucion');
+        });
+
+        document.getElementById('btn-expand-tabla').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const selector = document.getElementById('tabla-tipo-dato');
+            const modalSelector = document.getElementById('modal-tabla-tipo-dato');
+            if (selector && modalSelector) {
+                modalSelector.value = selector.value;
+            }
+            document.getElementById('modal-tabla-buscar').value = document.getElementById('tabla-buscar').value;
+            abrirModal('modal-tabla');
+        });
+
+        // Cerrar modales
+        document.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', function() {
+                cerrarModal(this.dataset.modal);
+            });
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    cerrarModal(this.id);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    cerrarModal(modal.id);
+                });
+            }
+        });
+
+        // ================================================================
+        // EVENTOS DE SELECTORES DE TABLA
+        // ================================================================
+        document.getElementById('tabla-tipo-dato').addEventListener('change', function() {
+            const valor = this.value;
+            if (valor === 'promedio') {
+                estado.tablaTipo = 'promedio';
+                estado.tablaPeriodoSeleccionado = '';
+            } else if (valor.startsWith('mensual_')) {
+                estado.tablaTipo = 'mensual';
+                estado.tablaPeriodoSeleccionado = valor.replace('mensual_', '');
+            }
+            estado.page = 1;
+            const modalSelector = document.getElementById('modal-tabla-tipo-dato');
+            if (modalSelector) modalSelector.value = valor;
+            actualizarTabla();
+            actualizarModalTabla();
+        });
+
+        document.getElementById('modal-tabla-tipo-dato').addEventListener('change', function() {
+            const valor = this.value;
+            const mainSelector = document.getElementById('tabla-tipo-dato');
+            if (mainSelector) mainSelector.value = valor;
+            if (valor === 'promedio') {
+                estado.tablaTipo = 'promedio';
+                estado.tablaPeriodoSeleccionado = '';
+            } else if (valor.startsWith('mensual_')) {
+                estado.tablaTipo = 'mensual';
+                estado.tablaPeriodoSeleccionado = valor.replace('mensual_', '');
+            }
+            estado.page = 1;
+            actualizarModalTabla();
+            actualizarTabla();
+        });
+
+        document.getElementById('modal-tabla-buscar').addEventListener('input', function() {
+            document.getElementById('tabla-buscar').value = this.value;
+            estado.busqueda = this.value;
+            estado.page = 1;
+            actualizarModalTabla();
+            actualizarTabla();
+        });
+
+        document.getElementById('tabla-buscar').addEventListener('input', function() {
+            document.getElementById('modal-tabla-buscar').value = this.value;
+            estado.busqueda = this.value;
+            estado.page = 1;
+            actualizarTabla();
+            actualizarModalTabla();
+        });
+
+        // ================================================================
+        // ORDENAMIENTO DE TABLA
+        // ================================================================
+        function handleSort(col) {
+            if (estado.sortCol === col) {
+                estado.sortDir = estado.sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                estado.sortCol = col;
+                estado.sortDir = 'asc';
+            }
+            estado.page = 1;
+            actualizarTabla();
+            actualizarModalTabla();
+        }
+
+        document.querySelectorAll('#tabla-carteras thead th').forEach(th => {
+            th.addEventListener('click', function() {
+                const col = this.dataset.col;
+                if (col) handleSort(col);
+            });
+        });
+
+        document.querySelectorAll('#modal-tabla-body thead th').forEach(th => {
+            th.addEventListener('click', function() {
+                const col = this.dataset.col;
+                if (col) handleSort(col);
+            });
+        });
 
         // ================================================================
         // EVENTOS PRINCIPALES
@@ -3667,13 +4371,15 @@
         });
 
         document.getElementById('filtro-periodo').addEventListener('change', function() {
-            dashboardState.periodo = this.value;
-            actualizarDashboardCompleto();
+            estado.periodo = this.value;
+            estado.page = 1;
+            aplicarFiltros();
         });
 
         document.getElementById('filtro-indicador').addEventListener('change', function() {
-            dashboardState.indicador = this.value;
-            actualizarDashboardCompleto();
+            estado.indicador = this.value;
+            estado.page = 1;
+            aplicarFiltros();
         });
 
         document.getElementById('btn-limpiar').addEventListener('click', function() {
@@ -3682,9 +4388,19 @@
             document.getElementById('tabla-buscar').value = '';
             document.getElementById('modal-tabla-buscar').value = '';
 
-            dashboardState.periodo = periodos.length > 0 ? periodos[periodos.length - 1] : '';
-            dashboardState.indicador = 'ie_propia';
-            dashboardState.pais = 'todos';
+            if (periodos.length > 0) {
+                const selector = document.getElementById('tabla-tipo-dato');
+                if (selector) {
+                    const ultimoPeriodo = periodos[periodos.length - 1];
+                    selector.value = 'mensual_' + ultimoPeriodo;
+                    estado.tablaTipo = 'mensual';
+                    estado.tablaPeriodoSeleccionado = ultimoPeriodo;
+                }
+                const modalSelector = document.getElementById('modal-tabla-tipo-dato');
+                if (modalSelector) {
+                    modalSelector.value = 'mensual_' + periodos[periodos.length - 1];
+                }
+            }
 
             options.forEach(opt => opt.classList.remove('active'));
             const defaultOption = optionsContainer.querySelector('.option[data-value="todos"]');
@@ -3693,15 +4409,36 @@
                 selectedText.innerHTML = '<span class="globe-icon">🌍</span><span>Todos</span>';
             }
 
-            actualizarDashboardCompleto();
+            estado.pais = 'todos';
+            estado.periodo = periodos.length > 0 ? periodos[periodos.length - 1] : '';
+            estado.indicador = 'ie_propia';
+            estado.busqueda = '';
+            estado.page = 1;
+            estado.sortCol = 'cartera';
+            estado.sortDir = 'asc';
+            aplicarFiltros();
+        });
+
+        document.getElementById('pag-prev').addEventListener('click', function() {
+            if (estado.page > 1) { estado.page--;
+                actualizarTabla(); }
+        });
+        document.getElementById('pag-next').addEventListener('click', function() {
+            const selector = document.getElementById('tabla-tipo-dato');
+            const tipo = selector ? selector.value : 'promedio';
+            const { data } = obtenerDatosTabla(tipo);
+            const totalPages = Math.ceil(data.length / estado.pageSize);
+            if (estado.page < totalPages) { estado.page++;
+                actualizarTabla(); }
         });
 
         // Sidebar - Países
         document.querySelectorAll('#sidebar nav ul li[data-pais]').forEach(el => {
             el.addEventListener('click', function() {
                 const pais = this.dataset.pais;
-                dashboardState.pais = pais;
-                actualizarDashboardCompleto();
+                estado.pais = pais;
+                estado.page = 1;
+                aplicarFiltros();
 
                 options.forEach(opt => opt.classList.remove('active'));
                 const targetOption = optionsContainer.querySelector(`.option[data-value="${pais}"]`);
@@ -3737,17 +4474,20 @@
                     'active-country'));
 
                 if (view === 'ranking') {
-                    document.getElementById('modal-ranking').classList.add('active');
-                    document.body.style.overflow = 'hidden';
+                    abrirModal('modal-ranking');
                 } else if (view === 'evolucion') {
-                    document.getElementById('modal-evolucion').classList.add('active');
-                    document.body.style.overflow = 'hidden';
+                    abrirModal('modal-evolucion');
                 } else if (view === 'comparativo') {
-                    document.getElementById('modal-ranking-promedio-modal').classList.add('active');
-                    document.body.style.overflow = 'hidden';
+                    abrirModal('modal-ranking-promedio-modal');
                 } else if (view === 'detalle') {
-                    document.getElementById('modal-tabla').classList.add('active');
-                    document.body.style.overflow = 'hidden';
+                    const selector = document.getElementById('tabla-tipo-dato');
+                    const modalSelector = document.getElementById('modal-tabla-tipo-dato');
+                    if (selector && modalSelector) {
+                        modalSelector.value = selector.value;
+                    }
+                    document.getElementById('modal-tabla-buscar').value = document.getElementById('tabla-buscar')
+                        .value;
+                    abrirModal('modal-tabla');
                 }
             });
         });
@@ -3755,14 +4495,106 @@
         // ================================================================
         // EXPORTAR
         // ================================================================
-        // ... (código de exportación existente)
+        document.getElementById('export-excel').addEventListener('click', function() {
+            const selector = document.getElementById('tabla-tipo-dato');
+            const tipo = selector ? selector.value : 'promedio';
+            const { data } = obtenerDatosTabla(tipo);
+            if (data.length === 0) { alert('No hay datos para exportar.'); return; }
+            const exportData = data.map(r => ({
+                CARTERA: r.cartera,
+                'Honorario Promedio': fmtPct(r.honorario_promedio),
+                'Efici Maxima': fmtPct(r.efici_maxima),
+                'Efici Prome': fmtPct(r.efici_prome),
+                'Efici Propia': fmtPct(r.efici_propia),
+                'IE Maxima': fmtIE(r.ie_maxima),
+                'IE Promedio': fmtIE(r.ie_promedio),
+                'IE Propia': fmtIE(r.ie_propia),
+            }));
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Datos');
+            XLSX.writeFile(wb, `Indices_Estrategicos_${new Date().toISOString().slice(0,10)}.xlsx`);
+        });
+
+        document.getElementById('export-pdf').addEventListener('click', function() {
+            const selector = document.getElementById('tabla-tipo-dato');
+            const tipo = selector ? selector.value : 'promedio';
+            const { data } = obtenerDatosTabla(tipo);
+            if (data.length === 0) { alert('No hay datos para exportar.'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape', 'mm', 'a4');
+            const fecha = new Date().toLocaleString('es-ES');
+            doc.setFontSize(16);
+            doc.text('Índices Estratégicos - Mornese Analytics', 20, 20);
+            doc.setFontSize(10);
+            doc.text(`Exportado: ${fecha}`, 20, 28);
+            doc.text(`País: ${estado.pais === 'todos' ? 'Todos' : estado.pais} | Período: ${estado.periodo || 'Todos'}`, 20,
+                34);
+            const cols = ['Cartera', 'Hon.', 'Ef.Máx', 'Ef.Prom', 'Ef.Prop', 'IE Máx', 'IE Prom', 'IE Prop'];
+            const rows = data.map(r => [
+                r.cartera,
+                fmtPct(r.honorario_promedio),
+                fmtPct(r.efici_maxima),
+                fmtPct(r.efici_prome),
+                fmtPct(r.efici_propia),
+                fmtIE(r.ie_maxima),
+                fmtIE(r.ie_promedio),
+                fmtIE(r.ie_propia),
+            ]);
+            doc.autoTable({
+                head: [cols],
+                body: rows,
+                startY: 40,
+                styles: { fontSize: 7 },
+                headStyles: { fillColor: [26, 42, 108] },
+                margin: { left: 10, right: 10 },
+            });
+            doc.save(`Indices_Estrategicos_${new Date().toISOString().slice(0,10)}.pdf`);
+        });
+
+        document.getElementById('btn-export-tabla-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('btn-export-tabla-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+
+        document.getElementById('modal-ranking-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-ranking-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+        document.getElementById('modal-ranking-promedio-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-ranking-promedio-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+        document.getElementById('modal-evolucion-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-evolucion-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+        document.getElementById('modal-tabla-excel-btn').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-tabla-pdf-btn').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
+        document.getElementById('modal-tabla-export-excel').addEventListener('click', function() {
+            document.getElementById('export-excel').click();
+        });
+        document.getElementById('modal-tabla-export-pdf').addEventListener('click', function() {
+            document.getElementById('export-pdf').click();
+        });
 
         // ================================================================
-        // INICIO
+        // INICIO - CARGA AUTOMÁTICA
         // ================================================================
         console.log('📊 Índices Estratégicos - Mornese Analytics');
         console.log('📂 Cargando datos automáticamente desde:', RUTA_EXCEL);
-        console.log('🏗️ Arquitectura de eventos activada');
         cargarDatos();
     </script>
 
