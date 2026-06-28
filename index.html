@@ -19,7 +19,7 @@
 
     <style>
         /* ============================================================
-           ESTILOS COMPLETOS - VERSIÓN FINAL CON CARGA AUTOMÁTICA
+           ESTILOS COMPLETOS - VERSIÓN CORREGIDA
            ============================================================ */
         :root {
             --color-primary: #1a2a6c;
@@ -2592,13 +2592,12 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT COMPLETO
+    JAVASCRIPT COMPLETO - CORREGIDO
     ============================================================ -->
     <script>
         // ================================================================
         // CONFIGURACIÓN - RUTA DEL EXCEL
         // ================================================================
-        // ⚠️ CAMBIA ESTA URL POR LA DE TU EXCEL EN GITHUB ⚠️
         const RUTA_EXCEL = 'https://raw.githubusercontent.com/JMartinezMornese/indices-estrategicos/main/data/Base%20Indices%20Estrategicos.xlsx';
 
         // ================================================================
@@ -2799,13 +2798,11 @@
             if (cargando) return;
             cargando = true;
 
-            // Mostrar estado de carga
             document.getElementById('estado-carga').style.display = 'block';
             document.getElementById('estado-error').style.display = 'none';
             document.getElementById('dashboard-contenido').style.display = 'none';
             document.getElementById('update-date').textContent = 'Cargando datos...';
 
-            // Intentar descargar el Excel desde la URL pública de GitHub
             fetch(RUTA_EXCEL)
                 .then(response => {
                     if (!response.ok) {
@@ -2819,7 +2816,6 @@
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                         const json = XLSX.utils.sheet_to_json(firstSheet);
 
-                        // Procesar los datos
                         const raw = json
                             .filter(row => row.PAIS && row.PERIODO && row.CARTERA)
                             .map(row => ({
@@ -2836,7 +2832,6 @@
                             throw new Error('No se encontraron datos en el archivo. Verifica las columnas.');
                         }
 
-                        // Calcular IEs
                         raw.forEach(row => {
                             row.ie_maxima = calcularIE(row, 'ie_maxima');
                             row.ie_promedio = calcularIE(row, 'ie_promedio');
@@ -2848,7 +2843,6 @@
 
                         document.getElementById('update-date').textContent = new Date().toLocaleString('es-ES');
 
-                        // Ocultar carga, mostrar dashboard
                         document.getElementById('estado-carga').style.display = 'none';
                         document.getElementById('dashboard-contenido').style.display = 'block';
 
@@ -2943,7 +2937,7 @@
         }
 
         // ================================================================
-        // APLICAR FILTROS
+        // APLICAR FILTROS Y ACTUALIZAR TODO
         // ================================================================
         function aplicarFiltros() {
             if (!datosCargados || datos.length === 0) return;
@@ -2985,7 +2979,9 @@
         // SELECCIONAR AUTOMÁTICAMENTE LA MEJOR CARTERA PARA EVOLUCIÓN
         // ================================================================
         function seleccionarMejorCarteraEvolucion() {
-            if (!datosCargados || datos.length === 0 || !periodos.length) return;
+            if (!datosCargados || datos.length === 0 || !periodos.length) {
+                return;
+            }
 
             const ultimoPeriodo = periodos[periodos.length - 1];
             const indicador = estado.indicador;
@@ -4113,12 +4109,10 @@
         // EVENTOS PRINCIPALES
         // ================================================================
 
-        // ---- Botón refresh ----
         document.getElementById('btn-refresh').addEventListener('click', function() {
             cargarDatos();
         });
 
-        // ---- Botón reintentar (error) ----
         document.getElementById('btn-reintentar').addEventListener('click', function() {
             cargarDatos();
         });
@@ -4313,7 +4307,6 @@
             document.getElementById('export-pdf').click();
         });
 
-        // Exportar desde modales
         document.getElementById('modal-ranking-excel').addEventListener('click', function() {
             document.getElementById('export-excel').click();
         });
