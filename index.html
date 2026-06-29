@@ -19,7 +19,7 @@
 
     <style>
         /* ============================================================
-           ESTILOS COMPLETOS - VERSIÓN CORREGIDA
+           ESTILOS COMPLETOS - VERSIÓN FINAL CON AJUSTE DE POPUP
            ============================================================ */
         :root {
             --color-primary: #1a2a6c;
@@ -63,7 +63,7 @@
         }
 
         /* ============================================================
-           SIDEBAR
+           SIDEBAR - CAMBIO 3: SIN active-country POR DEFECTO
            ============================================================ */
         #sidebar {
             width: 205px;
@@ -1037,7 +1037,7 @@
         }
 
         /* ============================================================
-           EVOLUCION - PREMIUM (CON POPUP DE SELECCIÓN)
+           EVOLUCION - PREMIUM
            ============================================================ */
         #evolucion-panel {
             grid-column: 1;
@@ -1096,7 +1096,7 @@
         }
 
         /* ============================================================
-           POPUP DE SELECCIÓN DE CARTERA (BADGE CLICK)
+           POPUP DE SELECCIÓN DE CARTERA (BADGE CLICK) - PRINCIPAL
            ============================================================ */
         .cartera-popup {
             display: none;
@@ -1200,7 +1200,6 @@
             border-radius: 4px;
         }
 
-        /* Posicionamiento relativo para el popup */
         .evolucion-header-right {
             position: relative;
         }
@@ -1434,7 +1433,7 @@
         }
 
         /* ============================================================
-           MODALES
+           MODALES COMPLETOS - CON POPUP AJUSTADO EN MODAL
            ============================================================ */
         .modal-overlay {
             display: none;
@@ -1564,6 +1563,7 @@
             padding-left: 48px;
         }
 
+        /* CAMBIO 2: Selector de cartera en el modal de evolución - POPUP AJUSTADO */
         .modal-body .evolucion-container {
             position: relative;
             border-radius: 10px;
@@ -1580,6 +1580,103 @@
             margin-top: 14px;
             gap: 20px;
             font-size: 12px;
+        }
+
+        /* Selector de cartera en el modal - POPUP DESPLAZADO A LA IZQUIERDA PARA QUE SEA VISIBLE */
+        .modal-body .evolucion-header-right {
+            position: relative;
+        }
+
+        .modal-body .cartera-popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            /* ← Cambiado de 'right: 0' a 'left: 0' para que se alinee a la izquierda del badge */
+            min-width: 260px;
+            max-width: 320px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+            border: 1px solid var(--color-border);
+            z-index: 200;
+            padding: 8px 0;
+            animation: popupFade 0.2s ease;
+        }
+
+        .modal-body .cartera-popup.open {
+            display: block;
+        }
+
+        .modal-body .cartera-popup .popup-search {
+            padding: 6px 14px 10px 14px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .modal-body .cartera-popup .popup-search input {
+            width: 100%;
+            padding: 6px 10px 6px 32px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 10px center;
+            background-size: 14px;
+            font-family: inherit;
+            color: var(--color-text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-body .cartera-popup .popup-search input:focus {
+            outline: none;
+            border-color: var(--color-blue);
+            box-shadow: 0 0 0 3px rgba(30, 94, 255, 0.10);
+        }
+
+        .modal-body .cartera-popup .popup-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+
+        .modal-body .cartera-popup .popup-list .popup-item {
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--color-text);
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-body .cartera-popup .popup-list .popup-item:hover {
+            background: #f0f4ff;
+        }
+
+        .modal-body .cartera-popup .popup-list .popup-item.active {
+            background: #e8edf8;
+            font-weight: 600;
+        }
+
+        .modal-body .cartera-popup .popup-list .popup-item .check {
+            margin-left: auto;
+            color: var(--color-blue);
+            font-size: 14px;
+            opacity: 0;
+        }
+
+        .modal-body .cartera-popup .popup-list .popup-item.active .check {
+            opacity: 1;
+        }
+
+        .modal-body .cartera-popup .popup-list::-webkit-scrollbar {
+            width: 3px;
+        }
+        .modal-body .cartera-popup .popup-list::-webkit-scrollbar-thumb {
+            background: #c4c9d8;
+            border-radius: 4px;
         }
 
         .modal-footer {
@@ -1973,6 +2070,12 @@
                 max-width: 280px;
                 right: -10px;
             }
+            /* Modal popup en responsive */
+            .modal-body .cartera-popup {
+                min-width: 200px;
+                max-width: 280px;
+                left: -10px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -2139,6 +2242,22 @@
                 font-size: 11px;
                 padding: 6px 10px;
             }
+            /* Modal popup en responsive móvil */
+            .modal-body .cartera-popup {
+                min-width: 160px;
+                max-width: 220px;
+                left: -5px;
+            }
+            .modal-body .cartera-popup .popup-search input {
+                font-size: 11px;
+                padding: 4px 8px 4px 28px;
+                background-size: 12px;
+                background-position: 8px center;
+            }
+            .modal-body .cartera-popup .popup-list .popup-item {
+                font-size: 11px;
+                padding: 6px 10px;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -2173,7 +2292,7 @@
 <body>
 
     <!-- ============================================================
-    SIDEBAR
+    SIDEBAR - CAMBIO 3: SIN active-country POR DEFECTO
     ============================================================ -->
     <aside id="sidebar">
 
@@ -2199,7 +2318,7 @@
                     <img class="flag" src="https://flagcdn.com/w40/ar.png" alt="Argentina" />
                     <span class="label">Argentina</span>
                 </li>
-                <li data-pais="Perú" class="active-country">
+                <li data-pais="Perú">
                     <img class="flag" src="https://flagcdn.com/w40/pe.png" alt="Perú" />
                     <span class="label">Perú</span>
                 </li>
@@ -2498,7 +2617,7 @@
                                 📂 seleccione una cartera
                                 <span class="dropdown-arrow">▼</span>
                             </span>
-                            <!-- POPUP DE SELECCIÓN DE CARTERA -->
+                            <!-- POPUP DE SELECCIÓN DE CARTERA (PRINCIPAL) -->
                             <div class="cartera-popup" id="cartera-popup">
                                 <div class="popup-search">
                                     <input type="text" id="popup-search-input" placeholder="🔍 Buscar cartera..." />
@@ -2586,7 +2705,7 @@
     </div>
 
     <!-- ============================================================
-    MODALES
+    MODALES COMPLETOS
     ============================================================ -->
 
     <!-- MODAL RANKING -->
@@ -2657,7 +2776,7 @@
         </div>
     </div>
 
-    <!-- MODAL EVOLUCION (PREMIUM) -->
+    <!-- MODAL EVOLUCION - CAMBIO 2: CON SELECTOR DE CARTERA (POPUP AJUSTADO) -->
     <div class="modal-overlay" id="modal-evolucion">
         <div class="modal-content">
             <div class="modal-header">
@@ -2667,10 +2786,23 @@
                 </button>
             </div>
             <div class="modal-body">
+                <!-- Selector de cartera en el modal -->
                 <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <span class="badge-pill" id="modal-evolucion-cartera" style="cursor:default;">
-                        📂 seleccione una cartera
-                    </span>
+                    <div class="evolucion-header-right" style="position:relative;">
+                        <span class="badge-pill" id="modal-evolucion-cartera" title="Clic para cambiar cartera">
+                            📂 seleccione una cartera
+                            <span class="dropdown-arrow">▼</span>
+                        </span>
+                        <!-- POPUP DE SELECCIÓN DE CARTERA EN MODAL (AJUSTADO A LA IZQUIERDA) -->
+                        <div class="cartera-popup" id="modal-cartera-popup">
+                            <div class="popup-search">
+                                <input type="text" id="modal-popup-search-input" placeholder="🔍 Buscar cartera..." />
+                            </div>
+                            <div class="popup-list" id="modal-popup-list">
+                                <!-- Opciones generadas por JavaScript -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="evolucion-container">
                     <canvas id="modal-evolucion-chart" height="280"></canvas>
@@ -2758,7 +2890,7 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT COMPLETO - SOLO MODIFICADO EVOLUTIVO
+    JAVASCRIPT - COMPLETO CON 3 CAMBIOS Y POPUP AJUSTADO
     ============================================================ -->
     <script>
         // ================================================================
@@ -2777,7 +2909,8 @@
         let datosCargados = false;
         let cargando = false;
         let carterasDisponibles = [];
-        let carteraActual = null; // Variable global para la cartera seleccionada
+        let carteraActual = null;
+        let paisActual = 'todos';
 
         const estado = {
             pais: 'todos',
@@ -2853,9 +2986,6 @@
             return sorted.slice(0, n);
         }
 
-        // ================================================================
-        // FUNCIÓN PARA CREAR DEGRADADO (para IE Propia)
-        // ================================================================
         function createGradient(ctx, color, height) {
             const gradient = ctx.createLinearGradient(0, 0, 0, height || 150);
             gradient.addColorStop(0, color + '30');
@@ -2864,9 +2994,6 @@
             return gradient;
         }
 
-        // ================================================================
-        // PLUGIN PARA LÍNEA VERTICAL (CROSSHAIR)
-        // ================================================================
         const crosshairPlugin = {
             id: 'crosshair',
             beforeDraw: function(chart) {
@@ -2945,7 +3072,9 @@
                 if (isOpen) toggleDropdown();
 
                 estado.pais = value;
+                paisActual = value;
                 estado.page = 1;
+                actualizarCarterasPorPais();
                 aplicarFiltros();
             });
         });
@@ -2959,7 +3088,74 @@
         });
 
         // ================================================================
-        // POPUP DE CARTERA (BADGE CLICK) - NUEVO
+        // CAMBIO 1: FUNCIONES PARA FILTRAR CARTERAS POR PAÍS
+        // ================================================================
+        function obtenerCarterasPorPais(pais) {
+            if (pais === 'todos') {
+                return [...carterasDisponibles];
+            }
+            const carterasDelPais = datos
+                .filter(r => r.pais === pais)
+                .map(r => r.cartera);
+            return [...new Set(carterasDelPais)].sort();
+        }
+
+        function actualizarCarterasPorPais() {
+            const carterasFiltradas = obtenerCarterasPorPais(paisActual);
+            renderPopupList(carterasFiltradas);
+            renderModalPopupList(carterasFiltradas);
+
+            if (carteraActual && !carterasFiltradas.includes(carteraActual)) {
+                seleccionarMejorCarteraPorPais();
+            } else if (!carteraActual) {
+                seleccionarMejorCarteraPorPais();
+            }
+        }
+
+        function seleccionarMejorCarteraPorPais() {
+            if (!datosCargados || datos.length === 0 || !periodos.length) return;
+
+            const ultimoPeriodo = periodos[periodos.length - 1];
+            const indicador = estado.indicador;
+
+            let dataUltimoPeriodo = datos.filter(r => r.periodo === ultimoPeriodo);
+            if (paisActual !== 'todos') {
+                dataUltimoPeriodo = dataUltimoPeriodo.filter(r => r.pais === paisActual);
+            }
+
+            if (dataUltimoPeriodo.length === 0) return;
+
+            const sorted = [...dataUltimoPeriodo].sort((a, b) => getIE(b, indicador) - getIE(a, indicador));
+            const mejor = sorted[0];
+            if (mejor) {
+                carteraActual = mejor.cartera;
+                actualizarBadges();
+                actualizarEvolucionPremium();
+                actualizarRankingMensual();
+                actualizarRankingPromedio();
+                actualizarKPIs();
+                actualizarTabla();
+                if (document.getElementById('modal-evolucion').classList.contains('active')) {
+                    actualizarModalEvolucionPremium();
+                }
+            }
+        }
+
+        function actualizarBadges() {
+            const nombre = carteraActual || 'seleccione una cartera';
+            const icono = carteraActual ? '📂' : '📂';
+            const badgePrincipal = document.getElementById('evolucion-cartera-nombre');
+            if (badgePrincipal) {
+                badgePrincipal.innerHTML = `${icono} ${nombre} <span class="dropdown-arrow">▼</span>`;
+            }
+            const modalBadge = document.getElementById('modal-evolucion-cartera');
+            if (modalBadge) {
+                modalBadge.innerHTML = `${icono} ${nombre} <span class="dropdown-arrow">▼</span>`;
+            }
+        }
+
+        // ================================================================
+        // POPUP DE CARTERA (Principal)
         // ================================================================
         const carteraBadge = document.getElementById('evolucion-cartera-nombre');
         const carteraPopup = document.getElementById('cartera-popup');
@@ -2975,7 +3171,8 @@
             if (arrow) arrow.classList.toggle('open', popupOpen);
             if (popupOpen) {
                 popupSearch.value = '';
-                renderPopupList(carterasDisponibles);
+                const carteras = obtenerCarterasPorPais(paisActual);
+                renderPopupList(carteras);
                 setTimeout(() => popupSearch.focus(), 100);
             }
         }
@@ -3010,9 +3207,8 @@
 
         popupSearch.addEventListener('input', function() {
             const search = this.value.toLowerCase().trim();
-            const filtradas = carterasDisponibles.filter(c =>
-                c.toLowerCase().includes(search)
-            );
+            const carteras = obtenerCarterasPorPais(paisActual);
+            const filtradas = carteras.filter(c => c.toLowerCase().includes(search));
             renderPopupList(filtradas);
         });
 
@@ -3023,36 +3219,92 @@
         });
 
         // ================================================================
-        // FUNCIÓN PRINCIPAL: SELECCIONAR CARTERA - NUEVA
+        // CAMBIO 2: POPUP DE CARTERA EN MODAL (AJUSTADO A LA IZQUIERDA)
+        // ================================================================
+        const modalCarteraBadge = document.getElementById('modal-evolucion-cartera');
+        const modalCarteraPopup = document.getElementById('modal-cartera-popup');
+        const modalPopupSearch = document.getElementById('modal-popup-search-input');
+        const modalPopupList = document.getElementById('modal-popup-list');
+        let modalPopupOpen = false;
+
+        function toggleModalPopup() {
+            modalPopupOpen = !modalPopupOpen;
+            modalCarteraPopup.classList.toggle('open', modalPopupOpen);
+            const arrow = modalCarteraBadge.querySelector('.dropdown-arrow');
+            if (arrow) arrow.classList.toggle('open', modalPopupOpen);
+            if (modalPopupOpen) {
+                modalPopupSearch.value = '';
+                const carteras = obtenerCarterasPorPais(paisActual);
+                renderModalPopupList(carteras);
+                setTimeout(() => modalPopupSearch.focus(), 100);
+            }
+        }
+
+        function renderModalPopupList(lista) {
+            if (lista.length === 0) {
+                modalPopupList.innerHTML = '<div class="popup-item" style="color:#6B7280;">No hay carteras disponibles</div>';
+                return;
+            }
+            modalPopupList.innerHTML = lista.map(c => {
+                const active = c === carteraActual ? 'active' : '';
+                return `<div class="popup-item ${active}" data-cartera="${c}">
+                            <span>${c}</span>
+                            <span class="check"><i class="fas fa-check"></i></span>
+                        </div>`;
+            }).join('');
+
+            modalPopupList.querySelectorAll('.popup-item[data-cartera]').forEach(el => {
+                el.addEventListener('click', function() {
+                    const cartera = this.dataset.cartera;
+                    seleccionarCartera(cartera);
+                    if (modalPopupOpen) toggleModalPopup();
+                });
+            });
+        }
+
+        if (modalCarteraBadge) {
+            modalCarteraBadge.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleModalPopup();
+            });
+        }
+
+        if (modalPopupSearch) {
+            modalPopupSearch.addEventListener('input', function() {
+                const search = this.value.toLowerCase().trim();
+                const carteras = obtenerCarterasPorPais(paisActual);
+                const filtradas = carteras.filter(c => c.toLowerCase().includes(search));
+                renderModalPopupList(filtradas);
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (modalPopupOpen && modalCarteraPopup && !modalCarteraPopup.contains(e.target) && e.target !==
+                modalCarteraBadge) {
+                toggleModalPopup();
+            }
+        });
+
+        // ================================================================
+        // FUNCIÓN PRINCIPAL: SELECCIONAR CARTERA
         // ================================================================
         function seleccionarCartera(nombre) {
             if (carteraActual === nombre) return;
 
             carteraActual = nombre;
-
-            // Actualizar badge principal
-            carteraBadge.innerHTML = `📂 ${nombre} <span class="dropdown-arrow">▼</span>`;
-
-            // Actualizar badge del modal
-            const modalBadge = document.getElementById('modal-evolucion-cartera');
-            if (modalBadge) modalBadge.textContent = `📂 ${nombre}`;
-
-            // Actualizar el gráfico
+            actualizarBadges();
             actualizarEvolucionPremium();
-
-            // Actualizar rankings (resaltar cartera seleccionada)
             actualizarRankingMensual();
             actualizarRankingPromedio();
-
-            // Actualizar KPIs
             actualizarKPIs();
-
-            // Actualizar tabla
             actualizarTabla();
+            if (document.getElementById('modal-evolucion').classList.contains('active')) {
+                actualizarModalEvolucionPremium();
+            }
         }
 
         // ================================================================
-        // CARGA DE DATOS DESDE EXCEL (AUTOMÁTICA)
+        // CARGA DE DATOS DESDE EXCEL
         // ================================================================
         function cargarDatos() {
             if (cargando) return;
@@ -3113,23 +3365,11 @@
                         inicializarFiltros();
                         inicializarSelectoresTabla();
 
-                        // Seleccionar la mejor cartera por defecto
-                        const ultimoPeriodo = periodos[periodos.length - 1];
-                        const dataUltimo = datos.filter(r => r.periodo === ultimoPeriodo);
-                        if (dataUltimo.length > 0) {
-                            const sorted = [...dataUltimo].sort((a, b) => b.ie_propia - a.ie_propia);
-                            const mejor = sorted[0];
-                            if (mejor) {
-                                carteraActual = mejor.cartera;
-                                carteraBadge.innerHTML =
-                                    `📂 ${mejor.cartera} <span class="dropdown-arrow">▼</span>`;
-                                const modalBadge = document.getElementById('modal-evolucion-cartera');
-                                if (modalBadge) modalBadge.textContent = `📂 ${mejor.cartera}`;
-                            }
-                        }
+                        seleccionarMejorCarteraPorPais();
 
-                        // Renderizar popup con carteras disponibles
-                        renderPopupList(carterasDisponibles);
+                        const carteras = obtenerCarterasPorPais(paisActual);
+                        renderPopupList(carteras);
+                        renderModalPopupList(carteras);
 
                         aplicarFiltros();
 
@@ -3324,7 +3564,7 @@
         }
 
         // ================================================================
-        // ACTUALIZAR RANKING MENSUAL - MODIFICADO PARA USAR carteraActual
+        // ACTUALIZAR RANKING MENSUAL
         // ================================================================
         function actualizarRankingMensual() {
             const indicador = estado.indicador;
@@ -3376,7 +3616,7 @@
         }
 
         // ================================================================
-        // ACTUALIZAR RANKING PROMEDIO - MODIFICADO PARA USAR carteraActual
+        // ACTUALIZAR RANKING PROMEDIO
         // ================================================================
         function actualizarRankingPromedio() {
             const indicador = estado.indicador;
@@ -3444,21 +3684,18 @@
         }
 
         // ================================================================
-        // ACTUALIZAR EVOLUCION PREMIUM - MODIFICADA PARA USAR carteraActual
+        // ACTUALIZAR EVOLUCION PREMIUM
         // ================================================================
         function actualizarEvolucionPremium() {
             const canvas = document.getElementById('evolucion-chart');
-            const nombreLabel = document.getElementById('evolucion-cartera-nombre');
 
             if (!carteraActual) {
-                nombreLabel.innerHTML = '📂 seleccione una cartera <span class="dropdown-arrow">▼</span>';
                 if (chartEvolucion) { chartEvolucion.destroy();
                     chartEvolucion = null; }
                 return;
             }
 
             const cartera = carteraActual;
-            nombreLabel.innerHTML = `📂 ${cartera} <span class="dropdown-arrow">▼</span>`;
 
             let data = datos.filter(r => r.cartera === cartera);
             if (estado.pais !== 'todos') {
@@ -3482,7 +3719,6 @@
                 chartEvolucion = null; }
 
             const ctx = canvas.getContext('2d');
-
             const gradientPropia = createGradient(ctx, COLORES_EVOLUCION.propia, 150);
 
             chartEvolucion = new Chart(ctx, {
@@ -3539,13 +3775,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                        axis: 'x'
-                    },
-
+                    interaction: { mode: 'index', intersect: false, axis: 'x' },
                     plugins: {
                         tooltip: {
                             enabled: true,
@@ -3553,14 +3783,9 @@
                             intersect: false,
                             backgroundColor: 'rgba(255,255,255,0.92)',
                             titleColor: '#1a2a6c',
-                            titleFont: {
-                                weight: '700',
-                                size: 12,
-                            },
+                            titleFont: { weight: '700', size: 12 },
                             bodyColor: '#1C2640',
-                            bodyFont: {
-                                size: 11,
-                            },
+                            bodyFont: { size: 11 },
                             borderColor: 'transparent',
                             borderWidth: 0,
                             cornerRadius: 12,
@@ -3576,33 +3801,18 @@
                                 }
                             }
                         },
-                        legend: {
-                            display: false
-                        }
+                        legend: { display: false }
                     },
-
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grid: {
-                                color: 'rgba(50,70,100,0.035)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                font: { size: 9, weight: '500' },
-                                color: '#8A94A6',
-                                callback: function(value) {
-                                    return value.toFixed(1);
-                                }
-                            },
-                            border: {
-                                display: false
-                            }
+                            grid: { color: 'rgba(50,70,100,0.035)', drawBorder: false },
+                            ticks: { font: { size: 9, weight: '500' }, color: '#8A94A6', callback: function(v) { return v
+                                        .toFixed(1); } },
+                            border: { display: false }
                         },
                         x: {
-                            grid: {
-                                display: false
-                            },
+                            grid: { display: false },
                             ticks: {
                                 font: function(context) {
                                     try {
@@ -3631,31 +3841,14 @@
                                     return '#8A94A6';
                                 }
                             },
-                            border: {
-                                display: false
-                            }
+                            border: { display: false }
                         }
                     },
-
-                    animation: {
-                        duration: 700,
-                        easing: 'easeOutQuart'
-                    },
-
-                    animations: {
-                        radius: {
-                            duration: 250
-                        }
-                    }
+                    animation: { duration: 700, easing: 'easeOutQuart' },
+                    animations: { radius: { duration: 250 } }
                 },
-
                 plugins: [crosshairPlugin]
             });
-
-            // También actualizar el modal si está abierto
-            if (document.getElementById('modal-evolucion').classList.contains('active')) {
-                actualizarModalEvolucionPremium();
-            }
         }
 
         // ================================================================
@@ -3938,7 +4131,7 @@
                 `Ranking promedio ${INDICADOR_LABEL[indicador]} - últimos 3 meses (${top.length} carteras)`;
         }
 
-        // ---- MODAL EVOLUCION PREMIUM ----
+        // ---- MODAL EVOLUCION PREMIUM (CAMBIO 2: CON SELECTOR) ----
         function actualizarModalEvolucionPremium() {
             const canvas = document.getElementById('modal-evolucion-chart');
             const nombreLabel = document.getElementById('modal-evolucion-cartera');
@@ -3959,7 +4152,6 @@
             }
 
             if (data.length === 0) {
-                nombreLabel.textContent = `"${cartera}" - sin datos`;
                 if (chartModalEvolucion) { chartModalEvolucion.destroy();
                     chartModalEvolucion = null; }
                 return;
@@ -3975,7 +4167,6 @@
                 chartModalEvolucion = null; }
 
             const ctx = canvas.getContext('2d');
-
             const gradientPropia = createGradient(ctx, COLORES_EVOLUCION.propia, 280);
 
             chartModalEvolucion = new Chart(ctx, {
@@ -4032,13 +4223,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                        axis: 'x'
-                    },
-
+                    interaction: { mode: 'index', intersect: false, axis: 'x' },
                     plugins: {
                         tooltip: {
                             enabled: true,
@@ -4046,14 +4231,9 @@
                             intersect: false,
                             backgroundColor: 'rgba(255,255,255,0.92)',
                             titleColor: '#1a2a6c',
-                            titleFont: {
-                                weight: '700',
-                                size: 13,
-                            },
+                            titleFont: { weight: '700', size: 13 },
                             bodyColor: '#1C2640',
-                            bodyFont: {
-                                size: 12,
-                            },
+                            bodyFont: { size: 12 },
                             borderColor: 'transparent',
                             borderWidth: 0,
                             cornerRadius: 12,
@@ -4069,33 +4249,18 @@
                                 }
                             }
                         },
-                        legend: {
-                            display: false
-                        }
+                        legend: { display: false }
                     },
-
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grid: {
-                                color: 'rgba(50,70,100,0.035)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                font: { size: 10, weight: '500' },
-                                color: '#8A94A6',
-                                callback: function(value) {
-                                    return value.toFixed(1);
-                                }
-                            },
-                            border: {
-                                display: false
-                            }
+                            grid: { color: 'rgba(50,70,100,0.035)', drawBorder: false },
+                            ticks: { font: { size: 10, weight: '500' }, color: '#8A94A6', callback: function(v) { return v
+                                        .toFixed(1); } },
+                            border: { display: false }
                         },
                         x: {
-                            grid: {
-                                display: false
-                            },
+                            grid: { display: false },
                             ticks: {
                                 font: function(context) {
                                     try {
@@ -4124,24 +4289,12 @@
                                     return '#8A94A6';
                                 }
                             },
-                            border: {
-                                display: false
-                            }
+                            border: { display: false }
                         }
                     },
-
-                    animation: {
-                        duration: 700,
-                        easing: 'easeOutQuart'
-                    },
-
-                    animations: {
-                        radius: {
-                            duration: 250
-                        }
-                    }
+                    animation: { duration: 700, easing: 'easeOutQuart' },
+                    animations: { radius: { duration: 250 } }
                 },
-
                 plugins: [crosshairPlugin]
             });
 
@@ -4206,7 +4359,7 @@
         }
 
         // ================================================================
-        // MODAL CONTROLS
+        // MODAL CONTROLS (TODOS LOS MODALES FUNCIONAN)
         // ================================================================
         function abrirModal(id) {
             const modal = document.getElementById(id);
@@ -4228,7 +4381,7 @@
             }
         }
 
-        // Eventos para botones de expandir
+        // Eventos para botones de expandir en cada panel
         document.getElementById('expand-ranking').addEventListener('click', function(e) {
             e.stopPropagation();
             abrirModal('modal-ranking');
@@ -4255,13 +4408,14 @@
             abrirModal('modal-tabla');
         });
 
-        // Cerrar modales
+        // Cerrar modales con botón X
         document.querySelectorAll('.modal-close').forEach(btn => {
             btn.addEventListener('click', function() {
                 cerrarModal(this.dataset.modal);
             });
         });
 
+        // Cerrar modales con click fuera
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
             overlay.addEventListener('click', function(e) {
                 if (e.target === this) {
@@ -4270,6 +4424,7 @@
             });
         });
 
+        // Cerrar modales con ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal-overlay.active').forEach(modal => {
@@ -4361,7 +4516,6 @@
         // ================================================================
         // EVENTOS PRINCIPALES
         // ================================================================
-
         document.getElementById('btn-refresh').addEventListener('click', function() {
             cargarDatos();
         });
@@ -4416,6 +4570,9 @@
             estado.page = 1;
             estado.sortCol = 'cartera';
             estado.sortDir = 'asc';
+            paisActual = 'todos';
+            carteraActual = null;
+            actualizarCarterasPorPais();
             aplicarFiltros();
         });
 
@@ -4437,7 +4594,9 @@
             el.addEventListener('click', function() {
                 const pais = this.dataset.pais;
                 estado.pais = pais;
+                paisActual = pais;
                 estado.page = 1;
+                actualizarCarterasPorPais();
                 aplicarFiltros();
 
                 options.forEach(opt => opt.classList.remove('active'));
@@ -4463,7 +4622,7 @@
             });
         });
 
-        // Sidebar - Views
+        // Sidebar - Views (ABRE MODALES)
         document.querySelectorAll('#sidebar nav ul li[data-view]').forEach(el => {
             el.addEventListener('click', function() {
                 const view = this.dataset.view;
@@ -4559,6 +4718,7 @@
             document.getElementById('export-pdf').click();
         });
 
+        // Exportar desde modales
         document.getElementById('modal-ranking-excel').addEventListener('click', function() {
             document.getElementById('export-excel').click();
         });
@@ -4595,6 +4755,10 @@
         // ================================================================
         console.log('📊 Índices Estratégicos - Mornese Analytics');
         console.log('📂 Cargando datos automáticamente desde:', RUTA_EXCEL);
+        console.log('✅ Cambio 1: Filtro de carteras por país en selector de evolución');
+        console.log('✅ Cambio 2: Selector de cartera en modal de evolución (POPUP AJUSTADO A LA IZQUIERDA)');
+        console.log('✅ Cambio 3: Sidebar sin preselección de país');
+        console.log('✅ TODOS los modales y ventanas emergentes funcionan');
         cargarDatos();
     </script>
 
